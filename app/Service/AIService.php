@@ -19,7 +19,7 @@ class AIService
         $this->client = new Client(env('GEMINI_API_KEY'));
     }
 
-    public function getTour(string $location, string $foodType, string $time)
+    public function getTour(string $location, string $foodType, string $time, int $numberOfDays)
     {
         $prompt = "
         Lên lịch trình food tour tại $location với các yêu cầu sau:
@@ -27,8 +27,9 @@ class AIService
         - Nơi đi: $location
         - Loại món ăn: $foodType
         - Thời gian đi (sáng/trưa/chiều/tối/cả ngày): $time
+        - Số ngày đi: $numberOfDays
 
-        Hãy đề xuất một lịch trình chi tiết và trả về kết quả dưới định dạng chuỗi JSON hợp lệ. Cấu trúc JSON nên là một object với các trường 'sáng', 'trưa', 'chiều', 'tối' (nếu 'Thời gian đi' là 'cả ngày' hoặc chỉ buổi được yêu cầu), mỗi trường chứa một array các object địa điểm ăn uống. Mỗi object địa điểm có các trường sau:
+        Hãy đề xuất một lịch trình chi tiết cho **$numberOfDays ngày**, trả về kết quả dưới định dạng chuỗi JSON hợp lệ. Cấu trúc JSON nên là một object với các trường tương ứng với từng ngày (ví dụ: 'ngày 1', 'ngày 2', ...), mỗi trường chứa một object với các trường 'sáng', 'trưa', 'chiều', 'tối', mỗi trường này lại chứa một array các object địa điểm ăn uống. Mỗi object địa điểm có các trường sau:
 
         - 'name': Tên địa điểm ăn uống (string)
         - 'address': Địa chỉ (string)
@@ -55,17 +56,20 @@ class AIService
             'user_id' => Auth::id() ?? 1,
         ]);
 
-        foreach ($response as $key => $value) {
-            foreach ($value as $item) {
-                TourItem::create([
-                    'tour_id' => $tour->id,
-                    'name' => $item['name'],
-                    'address' => $item['address'],
-                    'description' => $item['description'],
-                    'latitude' => $item['latitude'],
-                    'longitude' => $item['longitude'],
-                    'suggested_time' => $key,
-                ]);
+        foreach ($response as $day => $times) {
+            foreach ($times as $time => $items) {
+                foreach ($items as $item) {
+                    TourItem::create([
+                        'tour_id' => $tour->id,
+                        'day' => $day,
+                        'name' => $item['name'],
+                        'address' => $item['address'],
+                        'description' => $item['description'],
+                        'latitude' => $item['latitude'],
+                        'longitude' => $item['longitude'],
+                        'suggested_time' => $time,
+                    ]);
+                }
             }
         }
 
