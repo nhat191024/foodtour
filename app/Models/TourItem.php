@@ -8,6 +8,7 @@ class TourItem extends Model
 {
     protected $fillable = [
         'tour_id',
+        'day',
         'name',
         'address',
         'description',
