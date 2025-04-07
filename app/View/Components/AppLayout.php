@@ -12,6 +12,11 @@ class AppLayout extends Component
      */
     public function render(): View
     {
-        return view('layouts.app');
+        $listNavBarItems = [
+            ['name' => 'Trang chủ', 'route' => 'client.home'],
+            ['name' => 'Đặt món', 'route' => 'client.home'],
+            ['name' => 'Chọn thời gian', 'route' => 'client.home'],
+        ];
+        return view('layouts.app', compact('listNavBarItems'));
     }
 }
