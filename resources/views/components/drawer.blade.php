@@ -1,3 +1,5 @@
+@props(['listItems'])
+
 <div class="drawer z-10">
     <input id="my-drawer" class="drawer-toggle" type="checkbox" />
     <div class="drawer-content">
@@ -15,13 +17,16 @@
             <li>
                 <h2 class="my-2 text-lg font-bold text-gray-800 dark:text-gray-400">{{ __('Function') }}</h2>
                 <ul>
-                    {{-- example
-                    <li>
-                        <x-actions.sidebar-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
-                            <x-icons.user class="h-5 w-5" />
-                            {{ __('User') }}
-                        </x-actions.sidebar-link>
-                    </li> --}}
+                    @if (isset($listItems))
+                        @foreach ($listItems as $item)
+                            <li>
+                                <x-actions.sidebar-link :href="route($item['route'])" :active="request()->routeIs($item['route'])">
+                                    <x-icons.user class="h-5 w-5" />
+                                    {{ __($item['name']) }}
+                                </x-actions.sidebar-link>
+                            </li>
+                        @endforeach
+                    @endif
                 </ul>
             </li>
         </ul>
