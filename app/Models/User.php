@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function tours()
+    {
+        return $this->hasMany(Tour::class);
+    }
 }
