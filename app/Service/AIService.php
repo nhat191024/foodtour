@@ -5,10 +5,12 @@ namespace App\Service;
 use App\Models\Tour;
 use App\Models\TourItem;
 
+
 use GeminiAPI\Client;
 use GeminiAPI\Resources\ModelName;
 use GeminiAPI\Resources\Parts\TextPart;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AIService
 {
@@ -51,26 +53,37 @@ class AIService
         $response = preg_replace('/^```json\s*|\s*```$/', '', $response);
         $response = json_decode($response, true);
 
-        $tour = Tour::create([
-            'name' => $location,
-            'user_id' => Auth::id() ?? 1,
-        ]);
+        DB::beginTransaction();
+        try {
+            $tour = Tour::create([
+                'name' => $location,
+                'user_id' => Auth::id() ?? 1,
+            ]);
 
-        foreach ($response as $day => $times) {
-            foreach ($times as $time => $items) {
-                foreach ($items as $item) {
-                    TourItem::create([
-                        'tour_id' => $tour->id,
-                        'day' => $day,
-                        'name' => $item['name'],
-                        'address' => $item['address'],
-                        'description' => $item['description'],
-                        'latitude' => $item['latitude'],
-                        'longitude' => $item['longitude'],
-                        'suggested_time' => $time,
-                    ]);
+            foreach ($response as $day => $times) {
+                foreach ($times as $time => $items) {
+                    foreach ($items as $item) {
+                        TourItem::create([
+                            'tour_id' => $tour->id,
+                            'day' => $day,
+                            'name' => $item['name'],
+                            'address' => $item['address'],
+                            'description' => $item['description'],
+                            'latitude' => $item['latitude'],
+                            'longitude' => $item['longitude'],
+                            'suggested_time' => $time,
+                        ]);
+                    }
                 }
             }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'error' => 'Có lỗi xảy ra khi lưu lịch trình vào cơ sở dữ liệu. (có thể do lỗi định dạng JSON! idk my code suck anyway)',
+                'message' => $e->getMessage(),
+            ];
         }
 
         return $response;
