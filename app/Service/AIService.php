@@ -7,7 +7,6 @@ use App\Models\TourItem;
 
 
 use GeminiAPI\Client;
-use GeminiAPI\Resources\ModelName;
 use GeminiAPI\Resources\Parts\TextPart;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class AIService
 {
     private Client $client;
+    public const GEMINI_2_0_FLASH = 'gemini-2.0-flash';
 
     public function __construct()
     {
@@ -45,7 +45,7 @@ class AIService
          **Chỉ trả về một chuỗi JSON hợp lệ duy nhất, không bao gồm bất kỳ ký tự bao bọc nào như ```json hoặc ```.**
         ";
 
-        $response = $this->client->generativeModel(ModelName::GEMINI_2_0_FLASH)
+        $response = $this->client->generativeModel(self::GEMINI_2_0_FLASH)
             ->generateContent(
                 new TextPart($prompt),
             );
