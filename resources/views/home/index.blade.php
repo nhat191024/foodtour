@@ -247,7 +247,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="tab-panel hidden" id="tab4">
+                <div class="tab-panel hidden justify-center" id="tab4" style="text-align-last: center;">
                     {{-- ! do not put any code here, this is handled by JS in detail-tab.js, function pushDataToDetail(data) --}}
                 </div>
             </div>
@@ -268,8 +268,38 @@
 </x-actions.modal>
 
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+
 <script src="{{ asset('js/home.js') }}"></script>
 <script src="{{ asset('js/detail-tab.js') }}"></script>
+
+<script>
+    // Confirm delete for tour item details page
+    function handleDelete() {
+        console.log('selected to delete tour_item ID: ' + $selectedTourItemId);
+        // toggleAddTourItemButton($selectedTourItemId, true);
+        toggleTourItemVisibility($selectedTourItemId, false);
+        closeConfirmModal();
+
+        // showToast('database not yet implemented. token: '+ csrfToken, 'error');
+        let route = "{{ route('tour-item.disable') }}";
+        $.ajax({
+            url: route,
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            data: {
+                tour_item_id: $selectedTourItemId
+            },
+            success: function(response) {
+                showToast('Đã loại bỏ địa điểm', 'success');
+            },
+            error: function(xhr) {
+                showToast('Error disabling tour item', 'error');
+            }
+        });
+    }
+</script>
 
 {{-- this 'defer' script is for drawer.blade.php line 25 --}}
 <script defer>
@@ -299,7 +329,7 @@
                 id: id
             },
             success: function(response) {
-                // console.log(response);
+                console.log(response);
                 pushDataToDetail(response.data);
                 window.setLoading(false);
             },
