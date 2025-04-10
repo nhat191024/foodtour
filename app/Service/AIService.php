@@ -78,6 +78,9 @@ class AIService
             }
 
             DB::commit();
+            //! Query lại qua database bởi vì response từ Gemini không có id của tour_items
+            //! gây chút khó khăn khi làm chức năng 'xoá' lịch trình (vào lần đầu tạo tour)
+            return $this->getTourById($tour->id);
         } catch (\Exception $e) {
             DB::rollBack();
             return [
@@ -86,6 +89,38 @@ class AIService
             ];
         }
 
-        return $response;
+        // return $response;
+    }
+
+    public function getTourById(int $tourId)
+    {
+        $tour = Tour::with('tourItems')->find($tourId);
+        if (!$tour) {
+            return null;
+        }
+
+        $formattedResponse = [];
+        foreach ($tour->tourItems->groupBy('day') as $day => $items) {
+            $formattedResponse[$day] = [];
+            foreach ($items->groupBy('suggested_time') as $time => $timeItems) {
+                $formattedResponse[$day][$time] = $timeItems->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'tour_id' => $item->tour_id,
+                        'day' => $item->day,
+                        'name' => $item->name,
+                        'address' => $item->address,
+                        'latitude' => (float)$item->latitude,
+                        'longitude' => (float)$item->longitude,
+                        'description' => $item->description,
+                        'suggested_time' => $item->suggested_time,
+                        'food_type' => $item->food_type ?? null,
+                        'notes' => $item->notes ?? null,
+                    ];
+                })->toArray();
+            }
+        }
+
+        return $formattedResponse;
     }
 }
