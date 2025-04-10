@@ -21,6 +21,8 @@ class AIService
         $this->client = new Client(env('GEMINI_API_KEY'));
     }
 
+    // public function
+
     public function getTour(string $location, string $foodType, string $time, int $numberOfDays)
     {
         $prompt = "
@@ -72,6 +74,7 @@ class AIService
                             'latitude' => $item['latitude'],
                             'longitude' => $item['longitude'],
                             'suggested_time' => $time,
+                            'status' => 1,
                         ]);
                     }
                 }
@@ -92,9 +95,73 @@ class AIService
         // return $response;
     }
 
+    public function getNewTourItem(TourItem $tourItem)
+    {
+        $nearbyLocation = $tourItem->address;
+        $foodType = $tourItem->food_type;
+        $suggestedTime = $tourItem->suggested_time;
+        $day = $tourItem->day;
+        $prompt = "
+        Lên lịch trình food tour gần $nearbyLocation với các yêu cầu sau:
+
+        - Nơi đi (Chỉ lấy huyện/tỉnh thành): $nearbyLocation
+        - Loại món ăn: $foodType
+        - Thời gian đi (sáng/trưa/chiều/tối/cả ngày): $suggestedTime
+        - Thời gian mở cửa khuyến nghị: $day
+
+        Hãy đề xuất một quán ăn đạt tiêu chuẩn trên, trả về kết quả dưới định dạng chuỗi JSON hợp lệ. Cấu trúc JSON phải là một object với các trường sau:
+
+        - 'name': Tên địa điểm ăn uống (string)
+        - 'address': Địa chỉ (string)
+        - 'latitude': Vĩ độ (number)
+        - 'longitude': Kinh độ (number)
+        - 'description': Mô tả ngắn (string)
+        - 'suggested_time': Buổi gợi ý (string, ví dụ: 'sáng', 'trưa', 'tối')
+        - 'food_type': Tên loại món ăn (string, phù hợp với bảng food_types)
+        - 'notes': Ghi chú (string hoặc null)
+
+         **Chỉ trả về một chuỗi JSON hợp lệ duy nhất, không bao gồm bất kỳ ký tự bao bọc nào như ```json hoặc ```.**
+        ";
+
+        $response = $this->client->generativeModel(self::GEMINI_2_0_FLASH)
+            ->generateContent(
+                new TextPart($prompt),
+            );
+        $response = $response->text();
+        $response = preg_replace('/^```json\s*|\s*```$/', '', $response);
+        $response = json_decode($response, true);
+
+        DB::beginTransaction();
+        try {
+            $newTourItem = TourItem::create([
+                'tour_id' => $tourItem->tour_id,
+                'day' => $day,
+                'name' => $response['name'],
+                'address' => $response['address'],
+                'description' => $response['description'],
+                'latitude' => $response['latitude'],
+                'longitude' => $response['longitude'],
+                'suggested_time' => $suggestedTime,
+                'status' => 1,
+            ]);
+
+            DB::commit();
+            return $newTourItem;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'error' => 'Có lỗi xảy ra khi tạo địa điểm mới.',
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
     public function getTourById(int $tourId)
     {
-        $tour = Tour::with('tourItems')->find($tourId);
+        $tour = Tour::with(['tourItems' => function ($query) {
+            $query->where('status', 1);
+        }])->find($tourId);
+
         if (!$tour) {
             return null;
         }
