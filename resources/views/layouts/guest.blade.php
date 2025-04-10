@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html data-theme="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html data-theme="light" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Food Tour') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -20,7 +20,7 @@
     <div class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 px-4 sm:justify-center sm:pt-0 dark:bg-gray-900">
         <div>
             <a href="/">
-                <x-utils.application-logo class="h-20 w-20 fill-current text-gray-500" />
+                <x-utils.application-logo class="h-20 w-20" />
             </a>
         </div>
 
