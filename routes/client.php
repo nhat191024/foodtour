@@ -1,14 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', function () {
-    return view('client.home');
-})->name('client.home');
 
-Route::get('/select-food/{slug}', [App\Http\Controllers\Client\HomeController::class, 'categories'])
-    ->name('client.select-food');
-
-Route::get('/select-time', function () {
-    return view('client.select-time');
-})->name('client.select-time');
+Route::middleware('auth')->group(function () {
+    Route::get('/tour/start', [HomeController::class, 'index'])
+    ->name('client.start');
+    Route::post('/tour/detail', [HomeController::class, 'getTourById'])
+    ->name('tour.detail');
+    Route::post('/tour/submit', [HomeController::class, 'tourSubmit'])->name('tour.submit');
+});
