@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\TourItem;
 use App\Service\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -76,5 +77,43 @@ class HomeController extends Controller
         );
 
         return response()->json(['status' => 'success', 'data' => $result]);
+    }
+
+    public function disableTourItem(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['status' => 'error', 'message' => 'Vui lòng đăng nhập để sử dụng tính năng này.']);
+        }
+        $tourItemId = $request->input('tour_item_id');
+        if (empty($tourItemId)) {
+            return response()->json(['status' => 'error', 'message' => 'Vui lòng chọn tour để xem chi tiết.']);
+        }
+        try {
+            TourItem::where('id', $tourItemId)->update(['status' => 0]);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra khi xóa tour item.']);
+        }
+        return response()->json(['status' => 'success', 'message' => 'Đã xóa tour item thành công.']);
+    }
+
+    public function getNewTourItem(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['status' => 'error', 'message' => 'Vui lòng đăng nhập để sử dụng tính năng này.']);
+        }
+        $tourItemId = $request->input('tour_item_id');
+        if (empty($tourItemId)) {
+            return response()->json(['status' => 'error', 'message' => 'Vui lòng thử lại sau. ' . json_encode($request->all())]);
+        }
+        try {
+            $tourItem = TourItem::find($tourItemId);
+            if (!$tourItem) {
+                return response()->json(['status' => 'error', 'message' => 'Tour đó không tồn tại.']);
+            }
+            $newTourItem = $this->aiService->getNewTourItem($tourItem);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra khi lấy tour item mới.']);
+        }
+        return response()->json(['status' => 'success', 'data' => $newTourItem]);
     }
 }
