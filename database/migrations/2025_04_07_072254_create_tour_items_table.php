@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
             $table->string('suggested_time')->nullable();
+            $table->integer('status')->nullable()->default(1);
             $table->timestamps();
         });
     }
