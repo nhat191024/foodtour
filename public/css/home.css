@@ -1,0 +1,15 @@
+.tab-panel {
+    transition: all 0.3s ease-in-out;
+}
+
+.tab-panel.hidden {
+    display: none;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.option-box.selected {
+    @apply bg-base-300 border-primary border-2;
+}
