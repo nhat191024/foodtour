@@ -36,20 +36,97 @@ function toggleTourItemVisibility(tourItemId, isShow) {
 function appendNewTourItemBtnClicked(tourItemId) {
     console.log('appendNewTourItemBtnClicked', tourItemId);
     const button = $(`#btn-add-tour-item-${tourItemId}`);
-    button.addClass('hidden');
+    // button.addClass('hidden');
     const item = $(`#tour-item-${tourItemId}`);
+    // const parentOfItem = item.parentElement;
+    const itemsContainer = $('#new-tour-item-list-' + tourItemId);
 
-    //TODO: this is just a temporary test data, will need to implement real API call
-    item.html(getTourItemContent(
-        tourItemId,
-        'Tour Item Name',
-        'Tour Item Address',
-        'Tour Item Description',
-        0,
-        0
-    ));
+    const itemElement = document.createElement('div');
+    itemElement.className =
+        'bg-base-100 rounded-xl p-5 shadow-md border border-base-300 hover:shadow-lg transition-all duration-300';
+    itemElement.id = `tour-item-${tourItemId}`;
 
-    item.removeClass('hidden');
+    // make ajax call to
+    $.ajax({
+        url: '/tour-item/new',
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            tour_item_id: tourItemId,
+        },
+        success: function (response) {
+            if (response.status === 'success') {
+
+
+                console.log('response from get new tour items: ', response.data);
+
+                itemElement.innerHTML = getTourItemContent(
+                    response.data.id,
+                    response.data.name,
+                    response.data.address,
+                    response.data.description,
+                    response.data.latitude,
+                    response.data.longitude
+                );
+                lastTourId = item.id;
+                itemsContainer.append(itemElement);
+                window.setLoading(false);
+                showToast('Thêm mới địa điểm thành công.', 'success');
+            }
+            else {
+                window.setLoading(false);
+                showToast(response.message, 'error');
+            }
+        },
+        beforeSend: function () {
+            window.setLoading(true, 'Đang tìm địa điểm phù hợp');
+            setTimeout(() => {
+                window.setLoading(false);
+            }, 120000);
+        },
+        complete: function () {
+            setTimeout(() => {
+                window.setLoading(false);
+                showToast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
+            }, 120000);
+        },
+        error: function (xhr, status, error) {
+            // if get 401 error, redirect to login page
+            window.setLoading(false);
+            if (xhr.status === 401 || xhr.status === 403) {
+                showToast('Vui lòng đăng nhập để tiếp tục.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            } else {
+                showToast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
+            }
+        }
+    });
+
+
+    // parentOfItem.innerHTML += getTourItemContent(
+    //     tourItemId,
+    //     'Tour Item Name',
+    //     'Tour Item Address',
+    //     'Tour Item Description',
+    //     0,
+    //     0
+    // );
+
+    // TODO: this is just a temporary test data, will need to implement real API call
+    // item.html(getTourItemContent(
+    //     tourItemId,
+    //     'Tour Item Name',
+    //     'Tour Item Address',
+    //     'Tour Item Description',
+    //     0,
+    //     0
+    // ));
+
+    // item.removeClass('hidden');
 }
 
 //* returns HTML content for the tour item
@@ -109,19 +186,6 @@ function closeConfirmModal() {
     modal.close();
 }
 
-// Confirm delete
-function handleDelete() {
-    //* you can access $selectedTourItem here to see the selected delete item
-    console.log('selected to delete tour_item ID: ' + $selectedTourItemId);
-    toggleAddTourItemButton($selectedTourItemId, true);
-    toggleTourItemVisibility($selectedTourItemId, false);
-    closeConfirmModal();
-
-    showToast('Delete logic not found', 'error');
-    showToast('You are on your own: detail-tab.js line 47', 'error');
-    showToast('Also check browser console log', 'error');
-}
-
 function openMap(lat, lng) {
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
 }
@@ -132,9 +196,7 @@ function pushDataToDetail(data) {
     tab4.innerHTML = '';
 
     tab4.innerHTML = `
-        <button type="button"
-        onclick="reload();"
-        class="mt-2 btn btn-outline btn-primary w-full mb-3 rounded-2xl">
+        <button type="button" onclick="reload();" class="mt-2 btn btn-outline btn-primary w-1/2 mb-3 rounded-2xl">
             Bắt đầu lại
         </button>
     `;
@@ -172,12 +234,11 @@ function pushDataToDetail(data) {
             `;
 
             const itemsContainer = timeContainer.querySelector('.space-y-4');
+            let lastTourId = null;
             items.forEach(item => {
-                itemsContainer.innerHTML += `
-                        <button onclick="appendNewTourItemBtnClicked(${item.id})" type="button" id="btn-add-tour-item-${item.id}" class="btn btn-outline btn-primary w-full mb-3 hidden">
-                            Thêm mới
-                        </button>
-                    `
+                // itemsContainer.innerHTML += `
+
+                //     `
                 const itemElement = document.createElement('div');
                 itemElement.className =
                     'bg-base-100 rounded-xl p-5 shadow-md border border-base-300 hover:shadow-lg transition-all duration-300';
@@ -190,10 +251,17 @@ function pushDataToDetail(data) {
                     item.latitude,
                     item.longitude
                 );
-
+                lastTourId = item.id;
                 itemsContainer.appendChild(itemElement);
             });
 
+            itemsContainer.innerHTML += `
+                <div id="new-tour-item-list-${lastTourId}" class="space-y-4"></div>
+                <button onclick="appendNewTourItemBtnClicked(${lastTourId})" type="button" id="btn-add-tour-item-${lastTourId}" class="btn btn-outline btn-primary w-full mb-3">
+                    Thêm mới
+                </button>
+                `
+            // itemsContainer.id = `tour-item-list-${lastTourId}`;
             dayContainer.appendChild(timeContainer);
         });
 
