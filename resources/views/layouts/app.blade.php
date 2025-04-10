@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Food Tour') }}</title>
 
     <!-- Prevent flash of light mode -->
-    <script>
+    {{-- <script>
         // Check for saved theme preference or prefer-color-scheme
         if (localStorage.getItem('color-theme') === 'dark' ||
             (!('color-theme' in localStorage) &&
@@ -20,7 +20,7 @@
             document.documentElement.setAttribute('data-theme', 'light');
             document.documentElement.classList.remove('dark');
         }
-    </script>
+    </script> --}}
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
