@@ -34,17 +34,7 @@ function toggleTourItemVisibility(tourItemId, isShow) {
 //* this will push new tour item to the selected *empty* tour item slot
 //* more specifically, under the "Add Item" button
 function appendNewTourItemBtnClicked(tourItemId) {
-    console.log('appendNewTourItemBtnClicked', tourItemId);
-    const button = $(`#btn-add-tour-item-${tourItemId}`);
-    // button.addClass('hidden');
-    const item = $(`#tour-item-${tourItemId}`);
-    // const parentOfItem = item.parentElement;
-    const itemsContainer = $('#new-tour-item-list-' + tourItemId);
-
-    const itemElement = document.createElement('div');
-    itemElement.className =
-        'bg-base-100 rounded-xl p-5 shadow-md border border-base-300 hover:shadow-lg transition-all duration-300';
-    itemElement.id = `tour-item-${tourItemId}`;
+    // console.log('appendNewTourItemBtnClicked', tourItemId);
 
     // make ajax call to
     $.ajax({
@@ -58,9 +48,19 @@ function appendNewTourItemBtnClicked(tourItemId) {
         },
         success: function (response) {
             if (response.status === 'success') {
+                // console.log('response from get new tour items: ', response.data);
 
+                //* this tour item is for saving the *checkpoint*
+                //* so we know where to put the new item in
+                const item = $(`#tour-item-${tourItemId}`);
 
-                console.log('response from get new tour items: ', response.data);
+                //* new items will be appended here
+                const itemsContainer = $('#new-tour-item-list-' + tourItemId);
+
+                const itemElement = document.createElement('div');
+                itemElement.className =
+                    'bg-base-100 rounded-xl p-5 shadow-md border border-base-300 hover:shadow-lg transition-all duration-300';
+                itemElement.id = `tour-item-${response.data.id}`;
 
                 itemElement.innerHTML = getTourItemContent(
                     response.data.id,
@@ -73,7 +73,7 @@ function appendNewTourItemBtnClicked(tourItemId) {
                 lastTourId = item.id;
                 itemsContainer.append(itemElement);
                 window.setLoading(false);
-                showToast('Thêm mới địa điểm thành công.', 'success');
+                showToast(response.message, 'success');
             }
             else {
                 window.setLoading(false);
@@ -93,6 +93,8 @@ function appendNewTourItemBtnClicked(tourItemId) {
             }, 120000);
         },
         error: function (xhr, status, error) {
+            // console.log('Error:', error, xhr, status);
+
             // if get 401 error, redirect to login page
             window.setLoading(false);
             if (xhr.status === 401 || xhr.status === 403) {
@@ -105,28 +107,6 @@ function appendNewTourItemBtnClicked(tourItemId) {
             }
         }
     });
-
-
-    // parentOfItem.innerHTML += getTourItemContent(
-    //     tourItemId,
-    //     'Tour Item Name',
-    //     'Tour Item Address',
-    //     'Tour Item Description',
-    //     0,
-    //     0
-    // );
-
-    // TODO: this is just a temporary test data, will need to implement real API call
-    // item.html(getTourItemContent(
-    //     tourItemId,
-    //     'Tour Item Name',
-    //     'Tour Item Address',
-    //     'Tour Item Description',
-    //     0,
-    //     0
-    // ));
-
-    // item.removeClass('hidden');
 }
 
 //* returns HTML content for the tour item
