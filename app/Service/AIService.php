@@ -7,6 +7,7 @@ use App\Models\TourItem;
 
 
 use GeminiAPI\Client;
+use GeminiAPI\GenerationConfig;
 use GeminiAPI\Resources\Parts\TextPart;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,9 @@ class AIService
 {
     private Client $client;
     public const GEMINI_2_0_FLASH = 'gemini-2.0-flash';
+
+    //* Temperature 0.2 is the best for the AI to not hallucinate
+    public const TEMPERATURE = 0.2;
 
     public function __construct()
     {
@@ -42,12 +46,15 @@ class AIService
         - 'description': Mô tả ngắn (string)
         - 'suggested_time': Buổi gợi ý (string, ví dụ: 'sáng', 'trưa', 'tối')
         - 'food_type': Tên loại món ăn (string, phù hợp với bảng food_types)
-        - 'notes': Ghi chú (string hoặc null)
 
          **Chỉ trả về một chuỗi JSON hợp lệ duy nhất, không bao gồm bất kỳ ký tự bao bọc nào như ```json hoặc ```.**
         ";
 
+        $generationConfig = new GenerationConfig();
+        $generationConfig = $generationConfig->withTemperature(self::TEMPERATURE);
+
         $response = $this->client->generativeModel(self::GEMINI_2_0_FLASH)
+            ->withGenerationConfig($generationConfig)
             ->generateContent(
                 new TextPart($prompt),
             );
@@ -60,6 +67,9 @@ class AIService
             $tour = Tour::create([
                 'name' => $location,
                 'user_id' => Auth::id() ?? 1,
+                'food_type' => $foodType,
+                'time' => $time,
+                'number_of_days' => $numberOfDays
             ]);
 
             foreach ($response as $day => $times) {
@@ -97,17 +107,35 @@ class AIService
 
     public function getNewTourItem(TourItem $tourItem)
     {
-        $nearbyLocation = $tourItem->address;
-        $foodType = $tourItem->food_type;
-        $suggestedTime = $tourItem->suggested_time;
+        $deletedTourItems = TourItem::whereHas('tour', function($query) {
+            $query->where('user_id', Auth::id());
+        })->where('tour_id', $tourItem->tour_id)
+            ->where('status', 0)
+            ->get();
+        $existingTourItems = TourItem::whereHas('tour', function($query) {
+            $query->where('user_id', Auth::id());
+        })->where('tour_id', $tourItem->tour_id)
+            ->where('status', 1)
+            ->get();
+
+        $nearbyLocation = $tourItem->tour->name;
+        $foodType = $tourItem->tour->food_type;
+        $suggestedTime = $tourItem->tour->time;
         $day = $tourItem->day;
+        $deletedTourItemsAsString = $deletedTourItems->map(function ($item) {
+            return $item->name . '(' . $item->address . ')';
+        })->implode(', ');
+
+        $existingTourItemsAsString = $existingTourItems->map(function ($item) {
+            return $item->name . '(' . $item->address . ')';
+        })->implode(', ');
+
         $prompt = "
         Lên lịch trình food tour gần $nearbyLocation với các yêu cầu sau:
 
-        - Nơi đi (Chỉ lấy huyện/tỉnh thành): $nearbyLocation
+        - Nơi đi (Trong phạm vi huyện/tỉnh thành): $nearbyLocation
         - Loại món ăn: $foodType
         - Thời gian đi (sáng/trưa/chiều/tối/cả ngày): $suggestedTime
-        - Thời gian mở cửa khuyến nghị: $day
 
         Hãy đề xuất một quán ăn đạt tiêu chuẩn trên, trả về kết quả dưới định dạng chuỗi JSON hợp lệ. Cấu trúc JSON phải là một object với các trường sau:
 
@@ -118,15 +146,28 @@ class AIService
         - 'description': Mô tả ngắn (string)
         - 'suggested_time': Buổi gợi ý (string, ví dụ: 'sáng', 'trưa', 'tối')
         - 'food_type': Tên loại món ăn (string, phù hợp với bảng food_types)
-        - 'notes': Ghi chú (string hoặc null)
+
+        Lưu ý 1: Loại trừ các địa điểm đã bị xóa như sau:
+        '''
+        $deletedTourItemsAsString
+        '''
+        Lưu ý 2: Loại trừ các địa điểm đã có sẵn như sau:
+        '''
+        $existingTourItemsAsString
+        '''
 
          **Chỉ trả về một chuỗi JSON hợp lệ duy nhất, không bao gồm bất kỳ ký tự bao bọc nào như ```json hoặc ```.**
         ";
 
+        // return $prompt;
+        $generationConfig = new GenerationConfig();
+        $generationConfig = $generationConfig->withTemperature(self::TEMPERATURE);
+
         $response = $this->client->generativeModel(self::GEMINI_2_0_FLASH)
+            ->withGenerationConfig($generationConfig)
             ->generateContent(
                 new TextPart($prompt),
-            );
+                );
         $response = $response->text();
         $response = preg_replace('/^```json\s*|\s*```$/', '', $response);
         $response = json_decode($response, true);
