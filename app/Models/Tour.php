@@ -9,6 +9,9 @@ class Tour extends Model
     protected $fillable = [
         'name',
         'user_id',
+        'food_type',
+        'time',
+        'number_of_days',
     ];
 
     public function user()
