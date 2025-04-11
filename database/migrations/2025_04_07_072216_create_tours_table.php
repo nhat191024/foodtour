@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('tours', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('food_type');
+            $table->string('time');
+            $table->string('number_of_days');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
         });
