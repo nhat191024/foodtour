@@ -93,7 +93,7 @@ class HomeController extends Controller
         } catch (\Throwable $th) {
             return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra khi xóa tour item.']);
         }
-        return response()->json(['status' => 'success', 'message' => 'Đã xóa tour item thành công.']);
+        return response()->json(['status' => 'success', 'message' => 'Đã loại bỏ địa điểm.']);
     }
 
     public function getNewTourItem(Request $request)
@@ -112,8 +112,8 @@ class HomeController extends Controller
             }
             $newTourItem = $this->aiService->getNewTourItem($tourItem);
         } catch (\Throwable $th) {
-            return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra khi lấy tour item mới.']);
+            return response()->json(['status' => 'error', 'message' => 'Có lỗi xảy ra khi lấy tour item mới: ' . $th->getMessage()]);
         }
-        return response()->json(['status' => 'success', 'data' => $newTourItem]);
+        return response()->json(['status' => 'success', 'message' => 'Đã thêm địa điểm mới', 'data' => $newTourItem]);
     }
 }
