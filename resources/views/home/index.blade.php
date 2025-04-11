@@ -275,7 +275,7 @@
 <script>
     // Confirm delete for tour item details page
     function handleDelete() {
-        console.log('selected to delete tour_item ID: ' + $selectedTourItemId);
+        // console.log('selected to delete tour_item ID: ' + $selectedTourItemId);
         // toggleAddTourItemButton($selectedTourItemId, true);
         toggleTourItemVisibility($selectedTourItemId, false);
         closeConfirmModal();
@@ -292,7 +292,7 @@
                 tour_item_id: $selectedTourItemId
             },
             success: function(response) {
-                showToast('Đã loại bỏ địa điểm', 'success');
+                showToast(response.message, 'success');
             },
             error: function(xhr) {
                 showToast('Error disabling tour item', 'error');
@@ -329,7 +329,7 @@
                 id: id
             },
             success: function(response) {
-                console.log(response);
+                // console.log(response);
                 pushDataToDetail(response.data);
                 window.setLoading(false);
             },
@@ -343,7 +343,7 @@
                 }
             },
             error: function(xhr, status, error) {
-                console.error("Error fetching data:", error);
+                // console.error("Error fetching data:", error);
             }
         });
     }
