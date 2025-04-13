@@ -1,15 +1,16 @@
 <nav class="border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-    <div class="navbar mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="navbar-start">
-            <x-drawer :listItems="$listNavBarItems"/>
-        </div>
-        <div class="navbar-center">
-            <div class="flex shrink-0 items-center">
-                <a href="{{ route('client.start') }}">
-                    <x-utils.application-logo class="block h-9 w-auto" />
-                </a>
+    <nav class="fixed top-0 left-0 right-0 z-50 border border-gray-100 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="navbar mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="navbar-start">
+                <x-drawer :listItems="$listNavBarItems"/>
             </div>
-        </div>
+            <div class="navbar-center">
+                <div class="flex shrink-0 items-center">
+                    <a href="{{ route('client.start') }}">
+                        <x-utils.application-logo class="block h-9 w-auto" />
+                    </a>
+                </div>
+            </div>
         <div class="navbar-end">
             {{-- <x-utils.dark-mode-toggle /> --}}
 
