@@ -8,6 +8,20 @@ function confirmDelete(tourItemId) {
     modal.show();
 }
 
+//* this is to show the favorite confirm modal
+function confirmFavorite(tourItemId) {
+    $selectedTourItemId = tourItemId;
+    const modal = document.getElementById('favoriteConfirmModal');
+    modal.show();
+}
+
+//* this is to show the unfavorite confirm modal
+function confirmUnfavorite(tourItemId) {
+    $selectedTourItemId = tourItemId;
+    const modal = document.getElementById('unfavoriteConfirmModal');
+    modal.show();
+}
+
 //* this is to show/hide the 'Add Tour Item' button when a tour item is deleted
 function toggleAddTourItemButton(tourItemId, isShow) {
     const button = $(`#btn-add-tour-item-${tourItemId}`);
@@ -109,8 +123,40 @@ function appendNewTourItemBtnClicked(tourItemId) {
     });
 }
 
+function getHeartIcon(isFavorite, itemId) {
+    if (isFavorite) {
+        return `
+            <button type="button"
+                class="btn btn-error hover:btn-outline btn-sm"
+                onclick="confirmUnfavorite(${itemId})">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4" fill="currentColor"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            </button>
+        `;
+    } else {
+        return `
+            <button type="button"
+                    class="btn btn-outline btn-error btn-sm"
+                    onclick="confirmFavorite(${itemId})">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+            </button>
+        `;
+    }
+}
+
 //* returns HTML content for the tour item
-function getTourItemContent(itemId, itemName, itemAddress, itemDescription, itemLatitude, itemLongitude) {
+function getTourItemContent(itemId, itemName, itemAddress, itemDescription, itemLatitude, itemLongitude, isFavorite = false) {
     return `
         <h4 class="font-bold text-lg mb-2">${itemName}</h4>
 
@@ -133,6 +179,7 @@ function getTourItemContent(itemId, itemName, itemAddress, itemDescription, item
         </div>
 
         <div class="flex justify-end gap-3">
+            ${getHeartIcon(isFavorite, itemId)}
             <button type="button"
                 class="btn btn-outline btn-accent btn-sm"
                 onclick="openMap(${itemLatitude}, ${itemLongitude})">
@@ -146,7 +193,7 @@ function getTourItemContent(itemId, itemName, itemAddress, itemDescription, item
                 Map
             </button>
             <button type="button"
-                class="btn btn-outline btn-error btn-sm"
+                class="btn btn-outline btn-error btn-sm ${isFavorite ? 'hidden' : ''}"
                 onclick="confirmDelete(${itemId})">
                 <svg xmlns="http://www.w3.org/2000/svg"
                     class="h-4 w-4 mr-1" fill="none"
@@ -161,8 +208,13 @@ function getTourItemContent(itemId, itemName, itemAddress, itemDescription, item
         `;
 }
 
-function closeConfirmModal() {
+function closeConfirmDeleteModal() {
     const modal = document.getElementById('deleteConfirmModal');
+    modal.close();
+}
+
+function closeConfirmFavoriteModal() {
+    const modal = document.getElementById('favoriteConfirmModal');
     modal.close();
 }
 
@@ -170,14 +222,17 @@ function openMap(lat, lng) {
     window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
 }
 
-function pushDataToDetail(data) {
+function pushDataToDetail(data, isFavorite = false) {
+
+    // console.log('is favorite', isFavorite);
+
     const tab4 = document.getElementById('tab4');
 
     tab4.innerHTML = '';
 
     tab4.innerHTML = `
         <button type="button" onclick="reload();" class="mt-2 btn btn-outline btn-primary w-1/2 mb-3 rounded-2xl">
-            Bắt đầu lại
+            Quay lại
         </button>
     `;
 
@@ -229,19 +284,37 @@ function pushDataToDetail(data) {
                     item.address,
                     item.description,
                     item.latitude,
-                    item.longitude
+                    item.longitude,
+                    isFavorite
                 );
                 lastTourId = item.id;
                 itemsContainer.appendChild(itemElement);
             });
 
-            itemsContainer.innerHTML += `
+            // console.log('isFavorite', isFavorite);
+
+            if (isFavorite == false) {
+                itemsContainer.innerHTML += `
                 <div id="new-tour-item-list-${lastTourId}" class="space-y-4"></div>
                 <button onclick="appendNewTourItemBtnClicked(${lastTourId})" type="button" id="btn-add-tour-item-${lastTourId}" class="btn btn-outline btn-primary w-full mb-3">
-                    Thêm mới
+                Thêm mới
                 </button>
-                `
-            // itemsContainer.id = `tour-item-list-${lastTourId}`;
+                `;
+            } else if (items.length === 0) {
+                itemsContainer.innerHTML += `
+                    <div class="alert alert-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Thử tìm kiếm bất kỳ thứ gì rồi bấm vào <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline stroke-error" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg> để yêu thích quán</span>
+                    </div>
+                    <div id="new-tour-item-list-${lastTourId}" class="space-y-4"></div>
+                `;
+
+            }
+            // itemsContainer.id = `tour - item - list - ${ lastTourId } `;
             dayContainer.appendChild(timeContainer);
         });
 
