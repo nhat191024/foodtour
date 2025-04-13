@@ -51,9 +51,9 @@
     {{ $style }}
 @endisset
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased mt-10">
     <!-- Toast container -->
-    <div id="toast-container" class="toast toast-end toast-top z-50"></div>
+    <div id="toast-container" class="toast toast-end toast-top z-[9999] top-16"></div>
 
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         @include('layouts.navigation')
