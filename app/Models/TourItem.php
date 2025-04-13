@@ -21,4 +21,10 @@ class TourItem extends Model
     {
         return $this->belongsTo(Tour::class);
     }
+
+    public function favoriteByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorite_tour_items')
+            ->withTimestamps(); 
+    }
 }
