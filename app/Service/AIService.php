@@ -5,7 +5,6 @@ namespace App\Service;
 use App\Models\Tour;
 use App\Models\TourItem;
 
-
 use GeminiAPI\Client;
 use GeminiAPI\GenerationConfig;
 use GeminiAPI\Resources\Parts\TextPart;
