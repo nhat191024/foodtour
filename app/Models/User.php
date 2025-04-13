@@ -50,4 +50,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tour::class);
     }
+
+    public function favoriteTourItems()
+    {
+        return $this->hasMany(FavoriteTourItem::class);
+    }
+
+    // Add this new relationship
+    public function favoriteItems()
+    {
+        return $this->belongsToMany(TourItem::class, 'favorite_tour_items')
+            ->withTimestamps();
+    }
 }
