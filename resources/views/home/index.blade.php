@@ -411,8 +411,6 @@
     function handleConfirmEditTourModal() {
         $selectedTourId = $('#edit-tour-id').attr('value');
         $selectedTourName = $('#edit-tour-name').val().trim();
-        // console.log('selected to edit tour_item ID: ' + $selectedTourId);
-        // console.log('selected to edit tour_item name: ' + $selectedTourName);
 
         if ($selectedTourId == undefined || $selectedTourName == undefined) {
             return;
@@ -432,12 +430,10 @@
             },
             success: function(response) {
                 window.setLoading(false);
-                // console.log('rename route response:' + response);
                 if (response.status === 'success') {
                     // Update the tour name in the sidebar
                     $('#tour-name-' + $selectedTourId).text($selectedTourName);
                     document.getElementById('editTourModal').close();
-                    // console.log('rename route response:' + JSON.stringify(response));
                     showToast(response.message, 'success');
 
 
@@ -450,7 +446,6 @@
             },
             error: function(xhr) {
                 window.setLoading(false);
-                // console.log('favorite rouite error:' + xhr);
                 showToast('Vui lòng thử lại sau', 'error');
             }
         });
@@ -459,7 +454,6 @@
     function handleConfirmFavoriteModal(isFavorite) {
         closeConfirmUnfavoriteModal();
         closeConfirmFavoriteModal();
-        // console.log('selected to delete tour_item ID: ' + $selectedTourItemId);
         let route = "{{ route('api.tour-item.favorite') }}";
         $.ajax({
             url: route,
@@ -472,9 +466,6 @@
                 is_favorite: isFavorite
             },
             success: function(response) {
-                // console.log('favorite rouite response:' + response);
-                // console.log('favorite rouite status:' + response.status);
-                // console.log('favorite rouite message:' + response.message);
                 if (response.status === 'success') {
                     showToast(response.message, 'success');
                 } else {
@@ -485,7 +476,6 @@
                 }
             },
             error: function(xhr) {
-                // console.log('favorite rouite error:' + xhr);
                 showToast('Error toggling favorite status', 'error');
             }
         });
@@ -542,7 +532,6 @@
             url: "{{ route('tour.favorite') }}",
             type: "GET",
             success: function(response) {
-                // console.log(response);
                 pushDataToDetail(response.data, true);
                 window.setLoading(false);
                 setWeatherVisible(true);
@@ -558,7 +547,6 @@
     }
 
     function showDetail(id) {
-        // console.log(id);
         $('#final-tab-btn').click();
         if (id == -1) {
             showFavorite();
@@ -574,7 +562,6 @@
                 id: id
             },
             success: function(response) {
-                // console.log(response);
                 pushDataToDetail(response.data);
                 window.setLoading(false);
             },
@@ -594,9 +581,7 @@
     }
 
     function openEditTourModal(tour_id) {
-        // console.log(tour_id);
         let navLink = $('#tour-name-' + tour_id);
-        // console.log('nav link content: ' + navLink.html());
         if (tour_id == undefined) {
             return;
         }
