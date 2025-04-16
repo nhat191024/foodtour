@@ -18,21 +18,21 @@ Route::middleware('auth')->group(function () {
         ->name('tour-item.new');
 
     Route::prefix('api')->group(function () {
-        Route::get('/search-locations', [HomeController::class, 'searchLocations'])
-            ->name('api.search-locations');
-
-        Route::post('/get-current-weather', [HomeController::class, 'getCurrentWeather'])
-            ->name('api.get-current-weather');
-
-        Route::post('/get-weather-forecast', [HomeController::class, 'getCurrentWeather'])
-        ->name('api.get-weather-forecast');
-
         // favorite a tour item
-        Route::post('/api/tour/favorite',[HomeController::class, 'favoriteTourItem'])->name('api.tour-item.favorite');
-        
+        Route::post('/api/tour/favorite', [HomeController::class, 'favoriteTourItem'])->name('api.tour-item.favorite');
+
         // rename a tour
-        Route::post('/api/tour/rename',[HomeController::class, 'renameTour'])->name('api.tour-item.rename');
+        Route::post('/api/tour/rename', [HomeController::class, 'renameTour'])->name('api.tour-item.rename');
     });
+});
 
+Route::prefix('api')->group(function () {
+    Route::get('/search-locations', [HomeController::class, 'searchLocations'])
+        ->name('api.search-locations');
 
+    Route::post('/get-current-weather', [HomeController::class, 'getCurrentWeather'])
+        ->name('api.get-current-weather');
+
+    Route::post('/get-weather-forecast', [HomeController::class, 'getCurrentWeather'])
+        ->name('api.get-weather-forecast');
 });
