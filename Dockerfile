@@ -32,11 +32,14 @@ WORKDIR /var/www/html
 # Cài đặt Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Clear composer cache
+RUN composer clear-cache
+
 # Cài đặt các dependency của Laravel
 RUN composer install
 
-# RUN chmod -R a+rw storage
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Set correct file permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 
 # Cài đặt các dependency của Node.js
 RUN npm install
