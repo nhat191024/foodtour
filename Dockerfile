@@ -45,7 +45,7 @@ USER www-data
 
 # Set correct file permissions
 RUN mkdir -p storage bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Cài đặt các dependency của Node.js
 RUN npm install
