@@ -39,13 +39,13 @@ RUN composer clear-cache
 RUN composer install
 
 #composer update
-RUN composer update
+# RUN composer update
+
+USER www-data
 
 # Set correct file permissions
 RUN mkdir -p storage bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
-RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R a+rw storage
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Cài đặt các dependency của Node.js
 RUN npm install
