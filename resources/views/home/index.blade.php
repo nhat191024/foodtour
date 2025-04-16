@@ -258,11 +258,11 @@
         <div class="bg-base-100 rounded-xl shadow-lg overflow-hidden">
             <div class="weather-container p-4">
                 <div class="flex flex-col gap-4">
-                    <h2 class="text-xl font-bold text-center">Weather Forecast</h2>
+                    <h2 class="text-xl font-bold text-center">Xem dự báo thời tiết</h2>
 
                     <div class="relative">
                         <input type="text" id="location-search" class="input input-bordered w-full"
-                            placeholder="Search location...">
+                            placeholder="Xem ở địa điểm...">
                     </div>
 
                     <div id="search-results" class="hidden max-h-40 overflow-y-auto bg-base-200 rounded-lg"></div>
@@ -277,21 +277,21 @@
                     <div class="grid grid-cols-2 gap-2">
                         <div>
                             <label class="label">
-                                <span class="label-text">Start Date</span>
+                                <span class="label-text">Từ ngày</span>
                             </label>
                             <input type="date" id="start-date" class="input input-bordered w-full">
                         </div>
                         <div>
                             <label class="label">
-                                <span class="label-text">End Date</span>
+                                <span class="label-text">Đến ngày</span>
                             </label>
                             <input type="date" id="end-date" class="input input-bordered w-full">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 pb-3">
-                        <button id="get-current-btn" class="btn btn-primary">Chỉ hôm nay</button>
-                        <button id="get-weather-btn" class="btn btn-secondary">Khoảng ngày trên</button>
+                    <div class="grid grid-cols-1 gap-2 pb-3">
+                        {{-- <button id="get-current-btn" class="btn btn-primary">Chỉ hôm nay</button> --}}
+                        <button id="get-weather-btn" class="btn btn-info">Xem dự báo</button>
                     </div>
 
                     <div id="weather-info" class="hidden">
