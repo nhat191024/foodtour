@@ -41,17 +41,16 @@ RUN composer install
 #composer update
 # RUN composer update
 
+# Set correct file permissions
+# RUN mkdir -p storage bootstrap/cache
+RUN chown -R www-data:www-data *
+# RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
+
 # Cài đặt các dependency của Node.js
 RUN npm install
 
 # Chạy lệnh build cho vite
 RUN npm run build
-
-
-# Set correct file permissions
-# RUN mkdir -p storage bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 
 # tạo key cho ứng dụng Laravel
 RUN php artisan key:generate
