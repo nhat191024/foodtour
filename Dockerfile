@@ -43,7 +43,7 @@ RUN composer update
 
 # Set correct file permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
-RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R a+rw storage
 
 # Cài đặt các dependency của Node.js
