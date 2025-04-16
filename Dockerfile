@@ -42,6 +42,7 @@ RUN composer install
 RUN composer update
 
 # Set correct file permissions
+RUN mkdir -p storage bootstrap/cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
 RUN chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R a+rw storage
