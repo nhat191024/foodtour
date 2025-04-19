@@ -231,9 +231,14 @@ function pushDataToDetail(data, isFavorite = false) {
     tab4.innerHTML = '';
 
     tab4.innerHTML = `
-        <button type="button" onclick="reload();" class="mt-2 btn btn-outline btn-primary w-1/2 mb-3 rounded-2xl">
-            Quay lại
-        </button>
+        <div class="flex items-center justify-center gap-4 mb-4">
+            <button type="button" onclick="reload();" class="mt-2 btn btn-outline btn-primary w-1/3 mb-3 rounded-2xl">
+                Quay lại
+            </button>
+            <button type="button" onclick="screenshot('screenshot-area');" class="mt-2 btn btn-outline btn-primary w-1/3 mb-3 rounded-2xl">
+                Lưu ảnh
+            </button>
+        </div>
     `;
 
     const header = document.createElement('h1');
@@ -243,6 +248,7 @@ function pushDataToDetail(data, isFavorite = false) {
     Object.entries(data).forEach(([day, timeGroups]) => {
         const dayContainer = document.createElement('div');
         dayContainer.className = 'mb-8 overflow-hidden shadow-lg border border-base-300';
+        dayContainer.id = `screenshot-area`;
 
         dayContainer.innerHTML = `
             <div class="bg-base-200 p-4 border-b border-base-300">
