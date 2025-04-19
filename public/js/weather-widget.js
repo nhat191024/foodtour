@@ -375,11 +375,11 @@ $(document).ready(function() {
             const temp = data.hourly.temperature_2m[i];
 
             const hourlyHtml = `
-        <div class="text-center p-2 bg-base-200 rounded-lg">
-            <p class="text-sm">${formattedHour}</p>
-            <p class="font-bold">${temp}${data.hourly_units.temperature_2m}</p>
-        </div>
-    `;
+                <div class="text-center p-2 bg-base-200 rounded-lg">
+                    <p class="text-sm">${formattedHour}</p>
+                    <p class="font-bold">${temp}${data.hourly_units.temperature_2m}</p>
+                </div>
+            `;
 
             $hourlyContainer.append(hourlyHtml);
         }
