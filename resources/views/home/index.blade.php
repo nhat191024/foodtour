@@ -3,6 +3,7 @@
         <form id="foodTourForm" action="{{ route('tour.submit') }}" method="POST"
             class="bg-base-100 rounded-xl shadow-lg overflow-hidden">
             @csrf
+            <input type="hidden" name="tour_id" id="tour_id" value="0">
             <!-- Tab Container -->
             <div class="tab-container">
                 <!-- Tab 1: Location -->
@@ -357,8 +358,8 @@
     <h3 class="font-bold text-lg mb-4">Xác nhận xóa</h3>
     <p class="mb-6">Bạn có chắc chắn muốn xóa mục này không?</p>
     <div class="modal-action">
-        <button type="button" class="btn btn-error" onclick="handleDelete()">Xóa</button>
         <form method="dialog">
+            <button class="btn btn-error" onclick="handleDelete()">Xóa</button>
             <button class="btn">Hủy</button>
         </form>
     </div>
@@ -369,8 +370,8 @@
     <p class="mb-6">Mục yêu thích sẽ hiển thị trong <a href="{{ route('tour.favorite') }}" class="link">trang yêu
             thích</a></p>
     <div class="modal-action">
-        <button type="button" class="btn btn-error" onclick="handleConfirmFavoriteModal(true)">Đồng ý</button>
         <form method="dialog">
+            <button class="btn btn-error" onclick="handleConfirmFavoriteModal(true)">Đồng ý</button>
             <button class="btn">Hủy</button>
         </form>
     </div>
@@ -380,8 +381,8 @@
     <h3 class="font-bold text-lg mb-4">Bỏ đánh dấu yêu thích?</h3>
     <p class="mb-6">Hành động này sẽ loại bỏ mục yêu thích</a></p>
     <div class="modal-action">
-        <button type="button" class="btn btn-error" onclick="handleConfirmFavoriteModal(false)">Đồng ý</button>
         <form method="dialog">
+            <button class="btn btn-error" onclick="handleConfirmFavoriteModal(false)">Đồng ý</button>
             <button class="btn">Hủy</button>
         </form>
     </div>
@@ -406,188 +407,6 @@
 <script src="{{ asset('js/home.js') }}"></script>
 <script src="{{ asset('js/detail-tab.js') }}"></script>
 <script src="{{ asset('js/weather-widget.js') }}"></script>
+<script src="{{ asset('js/screenshot.js') }}"></script>
 
-<script>
-    function handleConfirmEditTourModal() {
-        $selectedTourId = $('#edit-tour-id').attr('value');
-        $selectedTourName = $('#edit-tour-name').val().trim();
-
-        if ($selectedTourId == undefined || $selectedTourName == undefined) {
-            return;
-        }
-
-        let route = "{{ route('api.tour-item.rename') }}";
-
-        $.ajax({
-            url: route,
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                tour_id: $selectedTourId,
-                new_name: $selectedTourName
-            },
-            success: function(response) {
-                window.setLoading(false);
-                if (response.status === 'success') {
-                    // Update the tour name in the sidebar
-                    $('#tour-name-' + $selectedTourId).text($selectedTourName);
-                    document.getElementById('editTourModal').close();
-                    showToast(response.message, 'success');
-
-
-                } else {
-                    showToast(response.message, 'error');
-                }
-            },
-            beforeSend: function() {
-                window.setLoading(true, 'Đợi một lát');
-            },
-            error: function(xhr) {
-                window.setLoading(false);
-                showToast('Vui lòng thử lại sau', 'error');
-            }
-        });
-    }
-    // Confirm favorite for tour item details page
-    function handleConfirmFavoriteModal(isFavorite) {
-        closeConfirmUnfavoriteModal();
-        closeConfirmFavoriteModal();
-        let route = "{{ route('api.tour-item.favorite') }}";
-        $.ajax({
-            url: route,
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                tour_item_id: $selectedTourItemId,
-                is_favorite: isFavorite
-            },
-            success: function(response) {
-                if (response.status === 'success') {
-                    showToast(response.message, 'success');
-                } else {
-                    showToast(response.message, 'error');
-                }
-                if (!isFavorite) {
-                    toggleTourItemVisibility($selectedTourItemId, false);
-                }
-            },
-            error: function(xhr) {
-                showToast('Error toggling favorite status', 'error');
-            }
-        });
-    }
-    // Confirm delete for tour item details page
-    function handleDelete() {
-        // toggleAddTourItemButton($selectedTourItemId, true);
-        toggleTourItemVisibility($selectedTourItemId, false);
-        closeConfirmModal();
-
-        // showToast('database not yet implemented. token: '+ csrfToken, 'error');
-        let route = "{{ route('tour-item.disable') }}";
-        $.ajax({
-            url: route,
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            data: {
-                tour_item_id: $selectedTourItemId
-            },
-            success: function(response) {
-                showToast(response.message, 'success');
-            },
-            error: function(xhr) {
-                showToast('Error disabling tour item', 'error');
-            }
-        });
-    }
-</script>
-
-{{-- this 'defer' script is for drawer.blade.php line 25 --}}
-<script defer>
-    function reload() {
-        $('#first-tab-btn').click();
-        $('#location').val('');
-        $('#days').val('');
-        $('input[name="food_types[]"]').prop('checked', false);
-        $('input[name="time_preference[]"]').prop('checked', false);
-        window.setLoading(true, 'Đang làm mới');
-        location.reload();
-        setTimeout(() => {
-            window.setLoading(false);
-        }, 300);
-    }
-
-    function setWeatherVisible(boolean) {
-        $('#weather-section').toggleClass('hidden', !boolean);
-    }
-
-    function showFavorite() {
-        setWeatherVisible(false);
-        $.ajax({
-            url: "{{ route('tour.favorite') }}",
-            type: "GET",
-            success: function(response) {
-                pushDataToDetail(response.data, true);
-                window.setLoading(false);
-                setWeatherVisible(true);
-            },
-            beforeSend: function() {
-                $('#my-drawer').click();
-                window.setLoading(true, 'Đang tải');
-            },
-            error: function(xhr, status, error) {
-                console.error("Error fetching data:", error);
-            }
-        })
-    }
-
-    function showDetail(id) {
-        $('#final-tab-btn').click();
-        if (id == -1) {
-            showFavorite();
-            return;
-        }
-        $.ajax({
-            url: "{{ route('tour.detail') }}",
-            type: "POST",
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            data: {
-                id: id
-            },
-            success: function(response) {
-                pushDataToDetail(response.data);
-                window.setLoading(false);
-            },
-            beforeSend: function() {
-                $('#my-drawer').click();
-                window.setLoading(true, (id ? 'Đợi một lát' : 'Đang tải'));
-                if (!id) {
-                    setTimeout(() => {
-                        window.setLoading(false);
-                    }, 300);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("Error fetching data:", error);
-            }
-        });
-    }
-
-    function openEditTourModal(tour_id) {
-        let navLink = $('#tour-name-' + tour_id);
-        if (tour_id == undefined) {
-            return;
-        }
-        $('#edit-tour-name').val(navLink.html().replace(/\s/g, ''));
-        $('#edit-tour-id').attr('value', `${tour_id}`);
-        const modal = document.getElementById('editTourModal');
-        modal.show();
-    }
-</script>
+@include('home.home-scripts')
