@@ -37,7 +37,7 @@ $(document).ready(function() {
     // Search for locations
     function searchLocations(query) {
         $.ajax({
-            url: baseAppUrl + '/api/search-locations',
+            url: window.baseAppUrl + '/api/search-locations',
             method: 'GET',
             data: {
                 query: query
@@ -164,7 +164,7 @@ $(document).ready(function() {
         $('#weather-error').addClass('hidden');
 
         $.ajax({
-            url: baseAppUrl + '/api/get-current-weather',
+            url: window.baseAppUrl + '/api/get-current-weather',
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -194,7 +194,7 @@ $(document).ready(function() {
         $('#weather-error').addClass('hidden');
 
         $.ajax({
-            url: baseAppUrl + '/api/get-weather-forecast',
+            url: window.baseAppUrl + '/api/get-weather-forecast',
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
