@@ -404,7 +404,7 @@
 
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 <script>
-    const baseAppUrl = "https://food-tour.taiyo.space";
+    window.baseAppUrl = "{{ env('APP_URL', 'http://127.0.0.1:8000') }}";
 </script>
 <script src="{{ asset('js/home.js') }}"></script>
 <script src="{{ asset('js/detail-tab.js') }}"></script>
