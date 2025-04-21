@@ -404,11 +404,11 @@
 
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
 <script>
-    window.baseAppUrl = "{{ env('APP_URL', 'http://127.0.0.1:8000') }}";
+    window.baseAppUrl = "{{ env('APP_URL', 'https://food-tour.taiyo.space') }}";
 </script>
-<script src="{{ asset('js/home.js') }}"></script>
-<script src="{{ asset('js/detail-tab.js') }}"></script>
-<script src="{{ asset('js/weather-widget.js') }}"></script>
-<script src="{{ asset('js/screenshot.js') }}"></script>
+<script src="{{ asset('js/home.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/detail-tab.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/weather-widget.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/screenshot.js') }}?v={{ time() }}"></script>
 
 @include('home.home-scripts')
