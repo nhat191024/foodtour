@@ -403,7 +403,9 @@
 </x-actions.modal>
 
 <link rel="stylesheet" href="{{ asset('css/home.css') }}">
-
+<script>
+    const baseAppUrl = "https://food-tour.taiyo.space";
+</script>
 <script src="{{ asset('js/home.js') }}"></script>
 <script src="{{ asset('js/detail-tab.js') }}"></script>
 <script src="{{ asset('js/weather-widget.js') }}"></script>

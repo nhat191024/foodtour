@@ -7,7 +7,7 @@
             return;
         }
 
-        let route = "{{ route('api.tour-item.rename') }}";
+        let route = baseAppUrl + '/api/tour/rename';
 
         $.ajax({
             url: route,
@@ -44,7 +44,7 @@
 
     // Confirm favorite for tour item details page
     function handleConfirmFavoriteModal(isFavorite) {
-        let route = "{{ route('api.tour-item.favorite') }}";
+        let route = baseAppUrl + '/api/tour/favorite';
         $.ajax({
             url: route,
             method: 'POST',
@@ -75,7 +75,7 @@
     function handleDelete() {
         // toggleAddTourItemButton($selectedTourItemId, true);
         toggleTourItemVisibility($selectedTourItemId, false);
-        let route = "{{ route('tour-item.disable') }}";
+        let route = baseAppUrl + '/tour-item/disable';
         $.ajax({
             url: route,
             method: 'POST',
@@ -118,7 +118,7 @@
         $('#tour_id').val(0);
         setWeatherVisible(false);
         $.ajax({
-            url: "https://food-tour.taiyo.space/tour/favorite",
+            url: baseAppUrl + '/tour/favorite',
             type: "GET",
             success: function(response) {
                 pushDataToDetail(response.data, true);
@@ -142,10 +142,10 @@
             return;
         }
         $.ajax({
-            url: "{{ route('tour.detail') }}",
+            url: baseAppUrl + '/tour/detail',
             type: "POST",
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             data: {
                 id: id
@@ -200,7 +200,9 @@
 <script type="module">
     async function screenshot(elementId) {
         let tourId = $('#tour_id').val();
-        let route = (tourId == 0) ? "{{ route('tour.favorite') }}" : "{{ route('tour.detail') }}";
+        let favoriteRoute = baseAppUrl + '/tour/favorite';
+        let detailRoute = baseAppUrl + '/tour/detail';
+        let route = (tourId == 0) ? favoriteRoute : detailRoute;
         let method = (tourId == 0) ? "GET" : "POST";
 
         $.ajax({
