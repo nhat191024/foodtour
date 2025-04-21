@@ -161,7 +161,7 @@ function submitForm(form) {
         },
         success: function (response) {
             if (response.status === 'success') {
-                // console.log('response: ', response.data);
+                $('#tour_id').val(getTourId(response.data));
                 switchToTab('tab4');
                 pushDataToDetail(response.data);
                 window.setLoading(false);
