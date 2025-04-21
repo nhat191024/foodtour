@@ -15,11 +15,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'tour/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://food-tour.taiyo.space'],
+    'allowed_origins' => ['https://food-tour.taiyo.space', 'http://localhost:80'],
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];
