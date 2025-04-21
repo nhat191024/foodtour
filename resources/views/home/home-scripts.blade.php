@@ -120,9 +120,6 @@
         $.ajax({
             url: "{{ route('tour.favorite') }}",
             type: "GET",
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
             success: function(response) {
                 pushDataToDetail(response.data, true);
                 window.setLoading(false);
