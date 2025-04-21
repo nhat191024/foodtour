@@ -118,7 +118,7 @@
         $('#tour_id').val(0);
         setWeatherVisible(false);
         $.ajax({
-            url: "{{ route('tour.favorite') }}",
+            url: "https://food-tour.taiyo.space/tour/favorite",
             type: "GET",
             success: function(response) {
                 pushDataToDetail(response.data, true);
