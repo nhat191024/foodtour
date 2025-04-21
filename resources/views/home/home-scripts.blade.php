@@ -121,7 +121,7 @@
             url: "{{ route('tour.favorite') }}",
             type: "GET",
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
                 pushDataToDetail(response.data, true);
@@ -148,7 +148,7 @@
             url: "{{ route('tour.detail') }}",
             type: "POST",
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             data: {
                 id: id
