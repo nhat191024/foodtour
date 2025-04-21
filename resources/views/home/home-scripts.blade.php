@@ -6,8 +6,9 @@
         if ($selectedTourId == undefined || $selectedTourName == undefined) {
             return;
         }
+        // console.log(window.baseAppUrl + '/api/tour/rename');
 
-        let route = baseAppUrl + '/api/tour/rename';
+        let route = window.baseAppUrl + '/api/tour/rename';
 
         $.ajax({
             url: route,
@@ -44,7 +45,7 @@
 
     // Confirm favorite for tour item details page
     function handleConfirmFavoriteModal(isFavorite) {
-        let route = baseAppUrl + '/api/tour/favorite';
+        let route = window.baseAppUrl + '/api/tour/favorite';
         $.ajax({
             url: route,
             method: 'POST',
@@ -75,7 +76,7 @@
     function handleDelete() {
         // toggleAddTourItemButton($selectedTourItemId, true);
         toggleTourItemVisibility($selectedTourItemId, false);
-        let route = baseAppUrl + '/tour-item/disable';
+        let route = window.baseAppUrl + '/tour-item/disable';
         $.ajax({
             url: route,
             method: 'POST',
@@ -118,7 +119,7 @@
         $('#tour_id').val(0);
         setWeatherVisible(false);
         $.ajax({
-            url: baseAppUrl + '/tour/favorite',
+            url: window.baseAppUrl + '/tour/favorite',
             type: "GET",
             success: function(response) {
                 pushDataToDetail(response.data, true);
@@ -142,7 +143,7 @@
             return;
         }
         $.ajax({
-            url: baseAppUrl + '/tour/detail',
+            url: window.baseAppUrl + '/tour/detail',
             type: "POST",
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -200,8 +201,8 @@
 <script type="module">
     async function screenshot(elementId) {
         let tourId = $('#tour_id').val();
-        let favoriteRoute = baseAppUrl + '/tour/favorite';
-        let detailRoute = baseAppUrl + '/tour/detail';
+        let favoriteRoute = window.baseAppUrl + '/tour/favorite';
+        let detailRoute = window.baseAppUrl + '/tour/detail';
         let route = (tourId == 0) ? favoriteRoute : detailRoute;
         let method = (tourId == 0) ? "GET" : "POST";
 
