@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://food-tour.taiyo.space', 'http://localhost:80'],
+    'allowed_origins' => ['https://food-tour.taiyo.space', 'http://localhost:80', 'http://food-tour.taiyo.space'],
 
     'allowed_origins_patterns' => [],
 
