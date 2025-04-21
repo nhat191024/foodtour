@@ -52,7 +52,7 @@ function appendNewTourItemBtnClicked(tourItemId) {
 
     // make ajax call to
     $.ajax({
-        url: baseAppUrl + '/tour-item/new',
+        url: window.baseAppUrl + '/tour-item/new',
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
