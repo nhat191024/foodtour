@@ -19,10 +19,10 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('api')->group(function () {
         // favorite a tour item
-        Route::post('/api/tour/favorite', [HomeController::class, 'favoriteTourItem'])->name('api.tour-item.favorite');
+        Route::post('/tour/favorite', [HomeController::class, 'favoriteTourItem'])->name('api.tour-item.favorite');
 
         // rename a tour
-        Route::post('/api/tour/rename', [HomeController::class, 'renameTour'])->name('api.tour-item.rename');
+        Route::post('/tour/rename', [HomeController::class, 'renameTour'])->name('api.tour-item.rename');
     });
 });
 
