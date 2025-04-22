@@ -35,8 +35,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Clear composer cache
 RUN composer clear-cache
 
-# Cài đặt các dependency của Laravel
-RUN composer install
+# Cài đặt các dependency của Laravel theo optimize autoloader
+RUN composer install --no-dev --optimize-autoloader
 
 # Set correct file permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/vendor
@@ -49,3 +49,9 @@ RUN npm run build
 
 # tạo key cho ứng dụng Laravel
 RUN php artisan key:generate
+
+#cache routes
+RUN php artisan route:cache
+
+#optimize
+RUN php artisan optimize:clear
