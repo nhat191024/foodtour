@@ -248,6 +248,140 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Tab 4: Calculator Selection -->
+                <div class="tab-panel hidden" id="calculator-tab">
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <h2 class="text-2xl font-bold text-primary">Tính chi tiêu</h2>
+                            <p class="text-base-content/70 mt-1">Ghi tên các món, thành viên để tính~</p>
+                        </div>
+
+                        <!-- Tour Selection -->
+                        <div class="form-control mb-4">
+                            <label class="label">
+                                <span class="label-text font-medium">Chọn Tour</span>
+                            </label>
+                            <select id="tour-select" class="select select-bordered w-full">
+                                <option value="" disabled selected>Chọn tour của bạn</option>
+                                <!-- Tour options will be populated by JavaScript -->
+                            </select>
+                        </div>
+
+                        <!-- Tour Item Selection -->
+                        <div class="form-control mb-4">
+                            <label class="label">
+                                <span class="label-text font-medium">Chọn quán</span>
+                            </label>
+                            <select id="tour-item-select" class="select select-bordered w-full">
+                                <option value="" disabled selected>Chọn quán của tour đó</option>
+                                <!-- Tour options will be populated by JavaScript -->
+                            </select>
+                        </div>
+
+                        <!-- Trip Name Input -->
+                        <div class="form-control mb-6">
+                            <label class="label">
+                                <span class="label-text font-medium">Tên chuyến đi</span>
+                                <span class="label-text-alt text-base-content/60">(Để trống sẽ dùng tên tour)</span>
+                            </label>
+                            <input type="text" id="trip-name" placeholder="Nhập tên chuyến đi"
+                                class="input input-bordered w-full" />
+                        </div>
+
+                        <!-- Food Items Section -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold text-lg">Danh sách món ăn</h3>
+                                <button type="button" id="add-food-item" class="btn btn-sm btn-outline">
+                                    + Thêm món
+                                </button>
+                            </div>
+
+                            <div id="food-items-container" class="space-y-3">
+                                <div class="food-item grid grid-cols-12 gap-2">
+                                    <div class="col-span-8">
+                                        <input type="text" placeholder="Tên món"
+                                            class="input input-bordered w-full food-name" />
+                                    </div>
+                                    <div class="col-span-3">
+                                        <input type="number" placeholder="Giá"
+                                            class="input input-bordered w-full food-price" />
+                                    </div>
+                                    <div class="col-span-1 flex items-center justify-center">
+                                        <button type="button"
+                                            class="btn btn-square btn-sm btn-error remove-food-item" disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Members Section -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold text-lg">Thành viên tham gia</h3>
+                                <button type="button" id="add-member" class="btn btn-sm btn-outline">
+                                    + Thêm thành viên
+                                </button>
+                            </div>
+
+                            <div id="members-container" class="space-y-3">
+                                <div class="member-item grid grid-cols-12 gap-2">
+                                    <div class="col-span-11">
+                                        <input type="text" placeholder="Tên thành viên"
+                                            class="input input-bordered w-full member-name" />
+                                    </div>
+                                    <div class="col-span-1 flex items-center justify-center">
+                                        <button type="button" class="btn btn-square btn-sm btn-error remove-member"
+                                            disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button type="button" id="calculate-btn" class="btn btn-primary w-full mb-6">
+                            Tính toán
+                        </button>
+
+                        <!-- Calculation History -->
+                        <div class="mb-6">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-semibold text-lg">Lịch sử tính toán</h3>
+                                <button type="button" id="view-history" class="btn btn-sm btn-outline">
+                                    Xem lịch sử
+                                </button>
+                            </div>
+
+                            <div id="calculation-history" class="space-y-3 hidden">
+                                <!-- History items will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Results Section (initially hidden) -->
+                        <div id="results-section" class="mt-6 border border-base-300 rounded-lg p-4 hidden">
+                            <h3 class="font-semibold text-lg mb-3">Kết quả tính toán</h3>
+                            <div id="calculation-results" class="space-y-2">
+                                <!-- Results will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <div class="tab-panel hidden justify-center" id="tab4" style="text-align-last: center;">
                     {{-- ! do not put any code here, this is handled by JS in detail-tab.js, function pushDataToDetail(data) --}}
                 </div>
@@ -406,6 +540,7 @@
 <script>
     window.baseAppUrl = "{{ env('APP_URL', 'https://food-tour.taiyo.space') }}";
 </script>
+<script src="{{ asset('js/money-calculator.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/home.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/detail-tab.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/weather-widget.js') }}?v={{ time() }}"></script>
