@@ -425,7 +425,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 gap-2 pb-3">
-                        {{-- <button id="get-current-btn" class="btn btn-primary">Chỉ hôm nay</button> --}}
                         <button id="get-weather-btn" class="btn btn-info">Xem dự báo</button>
                     </div>
 
@@ -444,32 +443,28 @@
 
                         <!-- Hourly forecast section (for current weather) -->
                         <div id="hourly-forecast-section" class="mb-4 hidden">
-                            <h4 class="font-medium mb-2">Today's Forecast</h4>
+                            <h4 class="font-medium mb-2">Dự báo theo giờ</h4>
                             <div id="hourly-forecast" class="grid grid-cols-4 gap-2 overflow-x-auto pb-2"></div>
 
-                            <div class="mt-4">
-                                <h4 class="font-medium mb-2">Wind Speed</h4>
-                                <div id="wind-info" class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                    </svg>
-                                    <span id="current-wind" class="text-lg"></span>
-                                </div>
+                            <div class="mt-4 text-center text-sm text-base-content/70">
+                                <p>Hiển thị nhiệt độ và khả năng mưa</p>
                             </div>
                         </div>
 
                         <!-- Daily forecast section (for date range) -->
                         <div id="daily-forecast-section" class="mb-4 hidden">
-                            <h4 class="font-medium mb-2">Daily Forecast</h4>
+                            <h4 class="font-medium mb-2">Dự báo theo ngày</h4>
                             <div id="daily-forecast" class="space-y-2"></div>
+
+                            <div class="mt-4 text-center text-sm text-base-content/70">
+                                <p>Hiển thị nhiệt độ cao/thấp và lượng mưa</p>
+                            </div>
                         </div>
                     </div>
 
                     <div id="weather-loading" class="hidden text-center py-4">
                         <span class="loading loading-spinner loading-md"></span>
-                        <p>Loading weather data...</p>
+                        <p>Đang tải dữ liệu thời tiết...</p>
                     </div>
 
                     <div id="weather-error" class="hidden alert alert-error">
@@ -478,7 +473,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>Error loading weather data. Please try again.</span>
+                        <span>Lỗi khi tải dữ liệu thời tiết. Vui lòng thử lại.</span>
                     </div>
                 </div>
             </div>
