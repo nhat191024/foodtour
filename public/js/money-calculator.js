@@ -11,7 +11,7 @@ $(document).ready(() => {
                     resolve(response);
                 },
                 beforeSend: function (response) {
-                    setLoading(true, 'hehe');
+                    setLoading(true, 'Đợi một lát');
                 },
                 error: function (xhr, status, error) {
                     setLoading(false);
