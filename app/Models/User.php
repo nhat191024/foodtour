@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(Tour::class);
     }
 
+    public function calculateHistory()
+    {
+        return $this->hasMany(CalculateHistory::class);
+    }
+
     public function favoriteTourItems()
     {
         return $this->hasMany(FavoriteTourItem::class);
