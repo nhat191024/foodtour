@@ -501,7 +501,7 @@
 
 <x-actions.modal id="favoriteConfirmModal">
     <h3 class="font-bold text-lg mb-4">Đánh dấu là yêu thích?</h3>
-    <p class="mb-6">Mục yêu thích sẽ hiển thị trong <a href="{{ route('tour.favorite') }}" class="link">trang yêu
+    <p class="mb-6">Mục yêu thích sẽ hiển thị trong <a onclick="goToFavorite()" class="link">trang yêu
             thích</a></p>
     <div class="modal-action">
         <form method="dialog">
