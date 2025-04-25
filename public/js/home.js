@@ -170,12 +170,6 @@ function submitForm(form) {
                 showToast(response.message, 'error');
             }
         },
-        complete: function () {
-            setTimeout(() => {
-                window.setLoading(false);
-                showToast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
-            }, 120000);
-        },
         error: function (xhr, status, error) {
             // if get 401 error, redirect to login page
             window.setLoading(false);

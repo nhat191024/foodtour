@@ -100,12 +100,6 @@ function appendNewTourItemBtnClicked(tourItemId) {
                 window.setLoading(false);
             }, 120000);
         },
-        complete: function () {
-            setTimeout(() => {
-                window.setLoading(false);
-                showToast('Có lỗi xảy ra, vui lòng thử lại sau.', 'error');
-            }, 120000);
-        },
         error: function (xhr, status, error) {
             // console.log('Error:', error, xhr, status);
 
