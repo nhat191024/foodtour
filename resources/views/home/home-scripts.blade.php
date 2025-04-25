@@ -1,9 +1,4 @@
 <script>
-    window.baseAppUrl = "{{ env('APP_URL') ?? '' }}";
-    if (window.baseAppUrl.includes('localhost') || window.baseAppUrl.includes('127.0.0.1') || window.baseAppUrl == '') {
-        showToast('.env using local APP_URL: ' + window.baseAppUrl, 'error');
-    }
-
     function handleConfirmEditTourModal() {
         $selectedTourId = $('#edit-tour-id').attr('value');
         $selectedTourName = $('#edit-tour-name').val().trim();
@@ -11,7 +6,6 @@
         if ($selectedTourId == undefined || $selectedTourName == undefined) {
             return;
         }
-        // console.log(window.baseAppUrl + '/api/tour/rename');
 
         let route = window.baseAppUrl + '/api/tour/rename';
 
@@ -145,6 +139,12 @@
         switchToTab('calculator-tab');
         $('#my-drawer').click();
         TourUtils.loadTours();
+    }
+
+    function goToFavorite(){
+        $('#my-drawer').click();
+        showFavorite();
+        document.getElementById('favoriteConfirmModal').close();
     }
 
     function showDetail(id) {
