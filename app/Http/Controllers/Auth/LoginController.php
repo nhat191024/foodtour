@@ -49,6 +49,6 @@ class LoginController extends Controller
             Auth::login($user, true);
         }
 
-        return redirect()->intended('client.home');
+        return redirect()->intended('/');
     }
 }
