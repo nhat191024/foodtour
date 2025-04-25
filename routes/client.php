@@ -42,4 +42,13 @@ Route::prefix('api')->group(function () {
 
     Route::get('/get-tour-items/{tourId}', [TourCalculatorController::class, 'getTourItemsByTourId'])
         ->name('api.get-all-tour-items');
+
+    Route::post('/save-calculation', [TourCalculatorController::class, 'saveCalculation'])
+        ->name('api.save-calculation');
+
+    Route::get('/get-calculation', [TourCalculatorController::class, 'getCalculation'])
+        ->name('api.get-calculation');
+
+    Route::get('/delete-calculation/{id}', [TourCalculatorController::class, 'deleteCalculation'])
+        ->name('api.delete-calculation');
 });
