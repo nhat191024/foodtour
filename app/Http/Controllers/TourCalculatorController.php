@@ -23,13 +23,16 @@ class TourCalculatorController extends Controller
 
     public function getAllTours()
     {
-        $allTours = Tour::all();
+        $allTours = Tour::where('user_id', auth()->id())->get();
         return response()->json(['status' => 'success', 'data' => $allTours]);
     }
 
     public function getTourItemsByTourId($tourId)
     {
-        $allTourItems = TourItem::where('tour_id',$tourId)->get();
+        $tour = Tour::where('id', $tourId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        $allTourItems = TourItem::where('tour_id', $tourId)->get();
         return response()->json(['status' => 'success', 'data' => $allTourItems]);
     }
 }
