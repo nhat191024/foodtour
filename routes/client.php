@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-
+use App\Http\Controllers\TourCalculatorController;
 
 Route::middleware('auth')->group(function () {
     Route::get('/tour/start', [HomeController::class, 'index'])
@@ -11,7 +11,8 @@ Route::middleware('auth')->group(function () {
         ->name('tour.favorite');
     Route::post('/tour/detail', [HomeController::class, 'getTourById'])
         ->name('tour.detail');
-    Route::post('/tour/submit', [HomeController::class, 'tourSubmit'])->name('tour.submit');
+    Route::post('/tour/submit', [HomeController::class, 'tourSubmit'])
+        ->name('tour.submit');
     Route::post('/tour-item/disable', [HomeController::class, 'disableTourItem'])
         ->name('tour-item.disable');
     Route::post('/tour-item/new', [HomeController::class, 'getNewTourItem'])
@@ -35,4 +36,10 @@ Route::prefix('api')->group(function () {
 
     Route::post('/get-weather-forecast', [HomeController::class, 'getCurrentWeather'])
         ->name('api.get-weather-forecast');
+
+    Route::get('/get-all-tours', [TourCalculatorController::class, 'getAllTours'])
+        ->name('api.get-all-tours');
+
+    Route::get('/get-tour-items/{tourId}', [TourCalculatorController::class, 'getTourItemsByTourId'])
+        ->name('api.get-all-tour-items');
 });
