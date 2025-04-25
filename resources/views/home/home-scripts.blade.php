@@ -1,4 +1,9 @@
 <script>
+    window.baseAppUrl = "{{ env('APP_URL') ?? '' }}";
+    if (window.baseAppUrl.includes('localhost') || window.baseAppUrl.includes('127.0.0.1') || window.baseAppUrl == '') {
+        showToast('.env using local APP_URL: ' + window.baseAppUrl, 'error');
+    }
+
     function handleConfirmEditTourModal() {
         $selectedTourId = $('#edit-tour-id').attr('value');
         $selectedTourName = $('#edit-tour-name').val().trim();
@@ -136,10 +141,19 @@
         })
     }
 
+    function showCalculator() {
+        switchToTab('calculator-tab');
+        $('#my-drawer').click();
+        TourUtils.loadTours();
+    }
+
     function showDetail(id) {
         $('#final-tab-btn').click();
         if (id == -1) {
             showFavorite();
+            return;
+        } else if (id == -2) {
+            showCalculator();
             return;
         }
         $.ajax({
