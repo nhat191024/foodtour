@@ -247,9 +247,6 @@ $(document).ready(function() {
         // Set current temperature (first entry in the hourly data)
         $('#current-temp').text(`${hourlyData.temperature_2m[0]}${units.temperature_2m}`);
 
-        // Set current wind speed
-        $('#current-wind').text(`${hourlyData.wind_speed_10m[0]} ${units.wind_speed_10m}`);
-
         // Display hourly forecast (next 24 hours)
         displayHourlyForecast(data);
 
@@ -275,7 +272,7 @@ $(document).ready(function() {
         $('#weather-location').text(displayName);
 
         // Set date range
-        $('#weather-date').text(`${formatDateForDisplay(startDate)} to ${formatDateForDisplay(endDate)}`);
+        $('#weather-date').text(`${formatDateForDisplay(startDate)} đến ${formatDateForDisplay(endDate)}`);
 
         // Group hourly data by date
         const dailyGroups = groupHourlyDataByDate(data.hourly);
@@ -298,11 +295,21 @@ $(document).ready(function() {
             if (!groups[date]) {
                 groups[date] = {
                     temperatures: [],
-                    windSpeeds: []
+                    precipitations: [],
+                    precipitationProbabilities: []
                 };
             }
             groups[date].temperatures.push(hourlyData.temperature_2m[index]);
-            groups[date].windSpeeds.push(hourlyData.wind_speed_10m[index]);
+
+            // Add precipitation data if available
+            if (hourlyData.precipitation) {
+                groups[date].precipitations.push(hourlyData.precipitation[index]);
+            }
+
+            // Add precipitation probability data if available
+            if (hourlyData.precipitation_probability) {
+                groups[date].precipitationProbabilities.push(hourlyData.precipitation_probability[index]);
+            }
         });
 
         return groups;
@@ -314,18 +321,37 @@ $(document).ready(function() {
         $dailyContainer.empty();
 
         Object.entries(dailyGroups).forEach(([date, data]) => {
-            const maxTemp = Math.max(...data.temperatures);
-            const minTemp = Math.min(...data.temperatures);
-            const avgWind = (data.windSpeeds.reduce((a, b) => a + b, 0) / data.windSpeeds.length)
-                .toFixed(1);
+            const maxTemp = Math.max(...data.temperatures).toFixed(1);
+            const minTemp = Math.min(...data.temperatures).toFixed(1);
+
+            // Calculate precipitation data
+            let precipitationInfo = '';
+            let precipitationProbabilityInfo = '';
+
+            if (data.precipitations && data.precipitations.length > 0) {
+                const totalPrecipitation = data.precipitations.reduce((sum, val) => sum + val, 0).toFixed(1);
+                const maxPrecipitation = Math.max(...data.precipitations).toFixed(1);
+
+                if (totalPrecipitation > 0) {
+                    precipitationInfo = `<p class="text-sm">Lượng mưa: ${totalPrecipitation} ${units.precipitation}</p>`;
+                }
+            }
+
+            if (data.precipitationProbabilities && data.precipitationProbabilities.length > 0) {
+                const maxProbability = Math.max(...data.precipitationProbabilities);
+
+                if (maxProbability > 0) {
+                    precipitationProbabilityInfo = `<p class="text-sm">Khả năng mưa: ${maxProbability}%</p>`;
+                }
+            }
 
             const dateObj = new Date(date);
-            const dayName = dateObj.toLocaleDateString('en-US', {
+            const dayName = dateObj.toLocaleDateString('vi-VN', {
                 weekday: 'long'
             });
-            const formattedDate = dateObj.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric'
+            const formattedDate = dateObj.toLocaleDateString('vi-VN', {
+                day: 'numeric',
+                month: 'numeric'
             });
 
             const dailyHtml = `
@@ -334,7 +360,8 @@ $(document).ready(function() {
                         <div>
                             <p class="font-medium">${dayName}</p>
                             <p class="text-sm text-base-content/70">${formattedDate}</p>
-                            <p class="text-sm text-base-content/70">Wind: ${avgWind} ${units.wind_speed_10m}</p>
+                            ${precipitationInfo}
+                            ${precipitationProbabilityInfo}
                         </div>
                         <div class="text-right">
                             <p class="font-bold">${maxTemp}${units.temperature_2m}</p>
@@ -351,9 +378,9 @@ $(document).ready(function() {
     // Format date for display (e.g., "April 15, 2025")
     function formatDateForDisplay(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: 'long',
+        return date.toLocaleDateString('vi-VN', {
             day: 'numeric',
+            month: 'numeric',
             year: 'numeric'
         });
     }
@@ -374,10 +401,23 @@ $(document).ready(function() {
 
             const temp = data.hourly.temperature_2m[i];
 
+            // Get precipitation data if available
+            let precipInfo = '';
+            if (data.hourly.precipitation && data.hourly.precipitation_probability) {
+                const precip = data.hourly.precipitation[i];
+                const precipProb = data.hourly.precipitation_probability[i];
+
+                if (precipProb > 0) {
+                    precipInfo = `<p class="text-xs">${precipProb}% (${precip}${data.hourly_units.precipitation})</p>`;
+                }
+            }
+
             const hourlyHtml = `
                 <div class="text-center p-2 bg-base-200 rounded-lg">
                     <p class="text-sm">${formattedHour}</p>
                     <p class="font-bold">${temp}${data.hourly_units.temperature_2m}</p>
+                    ${precipInfo}
+                    ${precipInfo ? '<i class="text-xs text-blue-500 fas fa-cloud-rain"></i>' : ''}
                 </div>
             `;
 
