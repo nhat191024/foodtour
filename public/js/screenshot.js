@@ -52,11 +52,16 @@ function generateFoodItineraryImage(data) {
         const day = data[dayKey];
         totalHeight += config.dayHeaderHeight;
 
-        const timeKeys = ['sáng', 'trưa', 'chiều', 'tối', 'Danh sách yêu thích gần đây'].filter(time => day[time] && day[time].length > 0);
+        // Use the same time order as in the rendering section
+        const timeOrder = ['sáng', 'trưa', 'chiều', 'tối', 'Danh sách yêu thích gần đây'];
 
-        for (const timeKey of timeKeys) {
-            totalHeight += config.timeHeaderHeight;
-            totalHeight += day[timeKey].length * (config.itemHeight + config.itemMargin);
+        for (const timeKey of timeOrder) {
+            if (day[timeKey] && day[timeKey].length > 0) {
+                totalHeight += config.timeHeaderHeight;
+                totalHeight += day[timeKey].length * (config.itemHeight + config.itemMargin);
+                // Add the extra margin/padding for the section
+                totalHeight += 5 + config.itemMargin;
+            }
         }
     }
     totalHeight += config.padding; // Bottom padding
