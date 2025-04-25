@@ -13,7 +13,8 @@ class OpenWeatherService
     private const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
     //* this is the default hourly data to be fetched
-    private const DEFAULT_HOURLY = 'temperature_2m,wind_speed_10m';
+    // private const DEFAULT_HOURLY = 'temperature_2m,wind_speed_10m';
+    private const DEFAULT_HOURLY = 'temperature_2m,precipitation,precipitation_probability';
     private const DEFAULT_COUNT = 10;
 
     private function callApi(
