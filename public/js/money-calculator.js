@@ -3,12 +3,15 @@ $(document).ready(() => {
 
     // ajax functions
     async function callApi(route, method, ...params) {
+        if (params.length > 0) {
+            params = params[0];
+        }
         return new Promise((resolve, reject) => {
             const csrfToken = $('meta[name="csrf-token"]').attr('content');
             $.ajax({
                 url: route,
                 method: method,
-                data: params,
+                data: JSON.stringify(params),
                 contentType: 'application/json',
                 headers: {
                     'X-CSRF-TOKEN': csrfToken
