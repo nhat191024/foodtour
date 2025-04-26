@@ -531,7 +531,7 @@
     </div>
 </x-actions.modal>
 
-<link rel="stylesheet" href="{{ asset('css/home.css') }}">
+<link rel="stylesheet" href="{{ asset('css/home.css') }}?v={{ time() }}">
 <script>
     window.baseAppUrl = "{{ env('APP_URL', 'https://food-tour.taiyo.space') }}";
 </script>
