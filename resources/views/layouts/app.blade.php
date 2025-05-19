@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>Food Tour</title>
 
     <!-- Prevent flash of light mode -->
-    <script>
+    {{-- <script>
         // Check for saved theme preference or prefer-color-scheme
         if (localStorage.getItem('color-theme') === 'dark' ||
             (!('color-theme' in localStorage) &&
@@ -20,7 +20,7 @@
             document.documentElement.setAttribute('data-theme', 'light');
             document.documentElement.classList.remove('dark');
         }
-    </script>
+    </script> --}}
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +33,9 @@
     <!-- select picker css -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erimicel/select2-tailwindcss-theme/dist/select2-tailwindcss-theme-plain.min.css">
+
+    <!-- Fabric -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -51,9 +54,9 @@
     {{ $style }}
 @endisset
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased mt-10">
     <!-- Toast container -->
-    <div id="toast-container" class="toast toast-end toast-top z-50"></div>
+    <div id="toast-container" class="toast toast-end toast-top z-[9999] top-16"></div>
 
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         @include('layouts.navigation')
