@@ -39,12 +39,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Cài đặt các dependency của Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# # Cài đặt các dependency của Node.js
-RUN npm install
-
-# # Chạy lệnh build cho vite
-RUN npm run build
-
 # tạo key cho ứng dụng Laravel
 RUN php artisan key:generate
 
