@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
+//* my coworker wrote this service AND ITS SUCKS
 class OpenWeatherService
 {
     //* API DOCUMENT: https://open-meteo.com/en/docs
@@ -31,17 +33,46 @@ class OpenWeatherService
         $locationName = preg_replace('/\s*,\s*Vietnam$/', '', $locationName);
         $coordinates = $this->getCoordinates($locationName);
 
+        Log::info("Fetching weather data for location: {$locationName} with coordinates: " . json_encode($coordinates));
+
         if (!$coordinates) {
             return null;
         }
 
         if ($startDate === null && $endDate === null) {
-            return $this->getWeather($coordinates['latitude'], $coordinates['longitude']);
+            $weather = $this->getWeather($coordinates['latitude'], $coordinates['longitude']);
         } else {
             $startDate = date('Y-m-d', strtotime($startDate));
             $endDate = date('Y-m-d', strtotime($endDate));
-            return $this->getWeather($coordinates['latitude'], $coordinates['longitude'], $startDate, $endDate);
+            $weather = $this->getWeather($coordinates['latitude'], $coordinates['longitude'], $startDate, $endDate);
         }
+
+        if (isset($weather['daily'])) {
+            return $this->formatDailyWeatherData($weather['daily']);
+        }
+
+        return null;
+    }
+
+    /**
+     * Format daily weather data into an array of days.
+     *
+     * @param array $daily
+     * @return array
+     */
+    private function formatDailyWeatherData(array $daily): array
+    {
+        $result = [];
+        $count = count($daily['time'] ?? []);
+        for ($i = 0; $i < $count; $i++) {
+            $weatherCode = $daily['weather_code'][$i] ?? null;
+            $result[] = [
+                'date' => $daily['time'][$i] ?? null,
+                'temperature' => $daily['temperature_2m_max'][$i] ?? null,
+                'weather' => $weatherCode !== null ? $this->mapWeatherCodeToString($weatherCode) : null,
+            ];
+        }
+        return $result;
     }
 
     /**
@@ -61,7 +92,7 @@ class OpenWeatherService
         $response = Http::get('https://api.open-meteo.com/v1/forecast', [
             'latitude' => $latitude,
             'longitude' => $longitude,
-            'hourly' => self::DEFAULT_HOURLY,
+            'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_hours,weather_code',
             'start_date' => $startDate,
             'end_date' => $endDate,
             'timezone' => self::DEFAULT_TIMEZONE,
@@ -107,7 +138,7 @@ class OpenWeatherService
     private function geocode(string $locationName, string $countryName = self::DEFAULT_COUNTRY_NAME, int $count = self::DEFAULT_COUNT): ?array
     {
         $response = Http::get('https://geocode.maps.co/search', [
-            'q' => `{$locationName} . '+' . {$countryName}`,
+            'q' => "{$locationName} . '+' . {$countryName}",
             'count' => $count,
             'api_key' => env('GEOCODE_API_KEY')
         ]);
@@ -117,6 +148,47 @@ class OpenWeatherService
         }
 
         return null;
+    }
+
+    /**
+     * Map weather code to a human-readable string.
+     *
+     * @param int $code
+     * @return string
+     */
+    private function mapWeatherCodeToString(int $code): string
+    {
+        $map = [
+            0 => 'Trời quang đãng',
+            1 => 'Chủ yếu quang đãng',
+            2 => 'Có mây rải rác',
+            3 => 'Nhiều mây',
+            45 => 'Sương mù',
+            48 => 'Sương mù đóng băng',
+            51 => 'Mưa phùn nhẹ',
+            53 => 'Mưa phùn vừa',
+            55 => 'Mưa phùn nặng',
+            56 => 'Mưa phùn đóng băng nhẹ',
+            57 => 'Mưa phùn đóng băng nặng',
+            61 => 'Mưa nhẹ',
+            63 => 'Mưa vừa',
+            65 => 'Mưa nặng',
+            66 => 'Mưa đóng băng nhẹ',
+            67 => 'Mưa đóng băng nặng',
+            71 => 'Tuyết nhẹ',
+            73 => 'Tuyết vừa',
+            75 => 'Tuyết nặng',
+            77 => 'Tuyết hạt',
+            80 => 'Mưa rào nhẹ',
+            81 => 'Mưa rào vừa',
+            82 => 'Mưa rào nặng',
+            85 => 'Mưa tuyết nhẹ',
+            86 => 'Mưa tuyết nặng',
+            95 => 'Dông',
+            96 => 'Dông kèm mưa đá nhẹ',
+            99 => 'Dông kèm mưa đá nặng',
+        ];
+        return $map[$code] ?? 'Không xác định';
     }
 
     /**
