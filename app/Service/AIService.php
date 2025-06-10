@@ -21,19 +21,34 @@ use Gemini\Enums\ResponseMimeType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+use App\Service\OpenWeatherService;
+
 class AIService
 {
     private Gemini\Client $client;
+    private  $weatherService;
 
     public function __construct()
     {
         $this->client = Gemini::client(env('GEMINI_API_KEY'));
+        $this->weatherService = app(OpenWeatherService::class);
     }
 
     // public function
 
-    public function getTour(string $location, string $foodType, string $time, int $numberOfDays, array $weather = [])
+    public function getTour(string $location, string $foodType, string $time, ?int $numberOfDays = 0, ?string $startDate = null, ?string $endDate = null)
     {
+        // add vietnam to the location if not already present
+        if (!str_contains($location, 'Vietnam')) {
+            $location .= ', Vietnam';
+        }
+        //if startDate and endDate are not provided, use the current date
+        $startDate ??= date('Y-m-d');
+        $endDate ??= date('Y-m-d', strtotime("+$numberOfDays days"));
+        $weather = $this->weatherService->getWeatherInVietnam($location, $startDate, $endDate);
+        //if numberOfDays is not provided, default to 1. it = 0 because weather service requires a start date and end date
+        $numberOfDays = $numberOfDays > 0 ? $numberOfDays : 1;
+
         $prompt = "
         Tạo một lịch trình du lịch ẩm thực và tham quan chi tiết tại $location với các yêu cầu sau:
         - Địa điểm: $location
