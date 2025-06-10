@@ -18,23 +18,13 @@ Route::get('/', function () {
 
 //for testing AI service
 Route::get('/test-ai-tour', function (\Illuminate\Http\Request $request) {
-    $location = $request->query('location', 'Hà Nội');
+    $location = $request->query('location', 'Hải Phòng');
     $foodType = $request->query('foodType', 'everything');
     $time = $request->query('time', 'full day');
     $numberOfDays = (int) $request->query('numberOfDays', 2);
-    $weather = $request->query('weather', [
-        'day 1' => [
-            'temp' => 30,
-            'weather' => 'sunny',
-        ],
-        'day 2' => [
-            'temp' => 28,
-            'weather' => 'rainy',
-        ]
-    ]);
 
     $aiService = new AIService();
-    $result = $aiService->getTour($location, $foodType, $time, $numberOfDays, (array)$weather);
+    $result = $aiService->getTour($location, $foodType, $time);
 
     return response()->json($result);
 });
