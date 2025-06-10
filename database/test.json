@@ -1,0 +1,150 @@
+{
+    "days": [
+        {
+            "day": "Ngày 1 (10/06/25 - 32.7°C, Dông)",
+            "times": {
+                "morning": [
+                    {
+                        "address": "57 Lê Lợi, Ngô Quyền, Hải Phòng",
+                        "description": "Quán bánh mì cay nổi tiếng với phần nhân pate, ruốc và tương ớt đặc trưng, vỏ bánh giòn rụm. Đây là món ăn sáng đặc trưng của Hải Phòng.",
+                        "name": "Bánh mì Cay Bà Già",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.865,
+                        "longitude": 106.685
+                    },
+                    {
+                        "address": "75 Lương Khánh Thiện, Ngô Quyền, Hải Phòng",
+                        "description": "Một trong những ga tàu cổ kính nhất Việt Nam, mang kiến trúc Pháp cổ điển, điểm check-in lý tưởng và có mái che phù hợp cho ngày dông.",
+                        "name": "Ga Hải Phòng",
+                        "type": "sightseeing",
+                        "latitude": 20.855,
+                        "longitude": 106.683
+                    }
+                ],
+                "lunch": [
+                    {
+                        "address": "114 Lê Lợi, Ngô Quyền, Hải Phòng",
+                        "description": "Món bún cá cay với nước dùng đậm đà, vị chua cay hài hòa, chả cá và lòng cá tươi ngon. Rất phù hợp cho thời tiết có mưa và nóng.",
+                        "name": "Bún Cá Cay Thâm",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.864,
+                        "longitude": 106.687
+                    }
+                ],
+                "afternoon": [
+                    {
+                        "address": "28 Trần Hưng Đạo, Hồng Bàng, Hải Phòng",
+                        "description": "Công trình kiến trúc Pháp cổ kính nằm ngay trung tâm thành phố, là biểu tượng văn hóa của Hải Phòng. Có thể tham quan bên ngoài và chụp ảnh.",
+                        "name": "Nhà hát lớn Hải Phòng",
+                        "type": "sightseeing",
+                        "latitude": 20.861,
+                        "longitude": 106.685
+                    },
+                    {
+                        "address": "28 Trần Hưng Đạo, Hồng Bàng, Hải Phòng",
+                        "description": "Quán cà phê mang phong cách bao cấp độc đáo, thích hợp để nghỉ ngơi và thưởng thức đồ uống trong lúc chờ ngớt mưa sau khi tham quan Nhà hát lớn.",
+                        "name": "Cộng Cà Phê",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.861,
+                        "longitude": 106.685
+                    }
+                ],
+                "evening": [
+                    {
+                        "address": "168 Văn Cao, Đằng Giang, Ngô Quyền, Hải Phòng",
+                        "description": "Nồi lẩu cua đồng thơm lừng, riêu cua béo ngậy, nước dùng thanh ngọt, rất phù hợp cho bữa tối gia đình hoặc nhóm bạn vào một ngày trời mát mẻ hơn sau cơn dông.",
+                        "name": "Lẩu Cua Đồng 168",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.88,
+                        "longitude": 106.696
+                    },
+                    {
+                        "address": "Đường Tam Bạc, Hồng Bàng, Hải Phòng",
+                        "description": "Con phố đi bộ ven sông Tam Bạc với cảnh quan thoáng đãng, ánh đèn lung linh về đêm, thích hợp tản bộ sau bữa ăn nếu thời tiết cho phép.",
+                        "name": "Phố đi bộ Tam Bạc",
+                        "type": "sightseeing",
+                        "latitude": 20.861,
+                        "longitude": 106.681
+                    }
+                ]
+            }
+        },
+        {
+            "day": "Ngày 2 (11/06/25 - 34.8°C, Mưa rào nhẹ)",
+            "times": {
+                "morning": [
+                    {
+                        "address": "179 Cầu Đất, Ngô Quyền, Hải Phòng",
+                        "description": "Quán ăn gia truyền nổi tiếng với món bánh đa cua bể đậm chất Hải Phòng, sợi bánh đa đỏ đặc trưng và nước dùng ngọt thanh, lý tưởng cho bữa sáng.",
+                        "name": "Bánh Đa Cua Bể Quán Bà Cụ",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.857,
+                        "longitude": 106.684
+                    },
+                    {
+                        "address": "11 Đinh Tiên Hoàng, Hồng Bàng, Hải Phòng",
+                        "description": "Nơi lưu giữ nhiều hiện vật quý giá về lịch sử và văn hóa của thành phố Cảng, là lựa chọn tuyệt vời cho ngày có mưa rào nhẹ vì là địa điểm trong nhà.",
+                        "name": "Bảo tàng Hải Phòng",
+                        "type": "sightseeing",
+                        "latitude": 20.859,
+                        "longitude": 106.684
+                    }
+                ],
+                "lunch": [
+                    {
+                        "address": "62 Lạch Tray, Ngô Quyền, Hải Phòng",
+                        "description": "Món nem cua bể giòn rụm với nhân đầy đặn, thơm phức, là đặc sản không thể bỏ qua khi đến Hải Phòng. Phù hợp ăn trưa sau buổi sáng tham quan.",
+                        "name": "Nem Cua Bể Loan Thùy",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.851,
+                        "longitude": 106.692
+                    }
+                ],
+                "afternoon": [
+                    {
+                        "address": "144 Hàng Kênh, Lê Chân, Hải Phòng",
+                        "description": "Một công trình kiến trúc cổ kính và linh thiêng, nổi bật với nghệ thuật chạm khắc gỗ tinh xảo, thể hiện nét văn hóa truyền thống của vùng đất Cảng.",
+                        "name": "Đình Hàng Kênh",
+                        "type": "sightseeing",
+                        "latitude": 20.844,
+                        "longitude": 106.677
+                    },
+                    {
+                        "address": "137 Lam Sơn, Lê Chân, Hải Phòng",
+                        "description": "Thưởng thức các loại chè truyền thống của Hải Phòng, mát lạnh và thanh ngọt, lý tưởng để giải nhiệt trong thời tiết nóng và sau khi tham quan.",
+                        "name": "Chè Lam Sơn",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.847,
+                        "longitude": 106.678
+                    }
+                ],
+                "evening": [
+                    {
+                        "address": "30 Đinh Tiên Hoàng, Hồng Bàng, Hải Phòng",
+                        "description": "Thiên đường các món ốc đa dạng được chế biến hấp dẫn, từ ốc hương, ốc móng tay đến ốc mỡ xào me, rất được lòng người dân địa phương và du khách. Món ăn vặt lý tưởng cho buổi tối.",
+                        "name": "Quán Ốc Thủy Dương",
+                        "type": "food",
+                        "food_type": "everything",
+                        "latitude": 20.859,
+                        "longitude": 106.686
+                    },
+                    {
+                        "address": "Đường Tam Bạc, Hồng Bàng, Hải Phòng",
+                        "description": "Trải nghiệm không khí sôi động của chợ đêm, khám phá ẩm thực đường phố và mua sắm quà lưu niệm (chỉ khi thời tiết thuận lợi để đi bộ và khám phá).",
+                        "name": "Chợ đêm Hải Phòng",
+                        "type": "sightseeing",
+                        "latitude": 20.861,
+                        "longitude": 106.681
+                    }
+                ]
+            }
+        }
+    ]
+}
