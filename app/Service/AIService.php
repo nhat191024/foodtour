@@ -3,14 +3,6 @@
 namespace App\Service;
 
 use Gemini;
-use App\Models\Tour;
-
-// use GeminiAPI\Client;
-// use GeminiAPI\GenerationConfig;
-// use GeminiAPI\Resources\Parts\TextPart;
-
-use App\Models\TourItem;
-
 use Gemini\Data\Schema;
 use Gemini\GeminiHelper;
 use Gemini\Enums\DataType;
@@ -20,6 +12,11 @@ use Gemini\Enums\ResponseMimeType;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+
+use App\Models\History;
+use App\Models\HistoryItem;
+use App\Models\HistoryFood;
+use App\Models\HistorySightseeing;
 
 use App\Service\OpenWeatherService;
 
@@ -49,7 +46,10 @@ class AIService
         //if numberOfDays is not provided, default to 1. it = 0 because weather service requires a start date and end date
         $numberOfDays = $numberOfDays > 0 ? $numberOfDays : 1;
 
-        $prompt = "
+        $response = null;
+
+        if (env('AI_SERVICE_DEBUG') === false) {
+            $prompt = "
         Tạo một lịch trình du lịch ẩm thực và tham quan chi tiết tại $location với các yêu cầu sau:
         - Địa điểm: $location
         - Loại ẩm thực chính cho chuyến đi: $foodType (áp dụng cho các địa điểm ăn uống được gợi ý).
@@ -70,121 +70,178 @@ class AIService
         **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
         ";
 
-        $response = $this->client
-            ->generativeModel(
-                model: GeminiHelper::generateGeminiModel(
-                    variation: ModelVariation::FLASH,
-                    generation: 2.5,
-                    version: "preview-05-20"
-                ),
-            )
-            ->withGenerationConfig(
-                generationConfig: new GenerationConfig(
-                    responseMimeType: ResponseMimeType::APPLICATION_JSON,
-                    responseSchema: new Schema(
-                        type: DataType::OBJECT,
-                        properties: [
-                            'days' => new Schema(
-                                type: DataType::ARRAY,
-                                description: 'Danh sách các ngày trong chuyến đi với thời gian ăn uống và địa điểm tham quan',
-                                items: new Schema(
-                                    type: DataType::OBJECT,
-                                    properties: [
-                                        'day' => new Schema(type: DataType::STRING, description: 'Ngày của chuyến đi, ví dụ: "Ngày 1", "Ngày 2"'),
-                                        'times' => new Schema(
-                                            type: DataType::OBJECT,
-                                            description: 'Thời gian ăn uống và địa điểm tham quan tương ứng',
-                                            properties: [
-                                                'morning' => new Schema(
-                                                    type: DataType::ARRAY,
-                                                    description: 'Các địa điểm cho buổi sáng',
-                                                    items: new Schema(
-                                                        type: DataType::OBJECT,
-                                                        properties: [
-                                                            'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
-                                                            'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
-                                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
-                                                            'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
-                                                            'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
-                                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
-                                                            'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
-                                                        ],
-                                                        // Đã bỏ 'latitude' và 'longitude' khỏi required
-                                                        required: ['type', 'name', 'address', 'description']
+            $response = $this->client
+                ->generativeModel(
+                    model: GeminiHelper::generateGeminiModel(
+                        variation: ModelVariation::FLASH,
+                        generation: 2.5,
+                        version: "preview-05-20"
+                    ),
+                )
+                ->withGenerationConfig(
+                    generationConfig: new GenerationConfig(
+                        responseMimeType: ResponseMimeType::APPLICATION_JSON,
+                        responseSchema: new Schema(
+                            type: DataType::OBJECT,
+                            properties: [
+                                'days' => new Schema(
+                                    type: DataType::ARRAY,
+                                    description: 'Danh sách các ngày trong chuyến đi với thời gian ăn uống và địa điểm tham quan',
+                                    items: new Schema(
+                                        type: DataType::OBJECT,
+                                        properties: [
+                                            'day' => new Schema(type: DataType::STRING, description: 'Ngày của chuyến đi và thông tin của ngày hôm đó, ví dụ: "Ngày 1 (d/m/yy - {temp}, {weather})", "Ngày 2 (d/m/yy - {temp}, {weather})"'),
+                                            'times' => new Schema(
+                                                type: DataType::OBJECT,
+                                                description: 'Thời gian ăn uống và địa điểm tham quan tương ứng',
+                                                properties: [
+                                                    'morning' => new Schema(
+                                                        type: DataType::ARRAY,
+                                                        description: 'Các địa điểm cho buổi sáng',
+                                                        items: new Schema(
+                                                            type: DataType::OBJECT,
+                                                            properties: [
+                                                                'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
+                                                                'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
+                                                                'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
+                                                                'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
+                                                                'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
+                                                                'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
+                                                                'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
+                                                            ],
+                                                            // Đã bỏ 'latitude' và 'longitude' khỏi required
+                                                            required: ['type', 'name', 'address', 'description']
+                                                        )
+                                                    ),
+                                                    'lunch' => new Schema(
+                                                        type: DataType::ARRAY,
+                                                        description: 'Các địa điểm cho buổi trưa',
+                                                        items: new Schema(
+                                                            type: DataType::OBJECT,
+                                                            properties: [
+                                                                'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
+                                                                'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
+                                                                'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
+                                                                'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
+                                                                'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
+                                                                'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
+                                                                'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
+                                                            ],
+                                                            required: ['type', 'name', 'address', 'description']
+                                                        )
+                                                    ),
+                                                    'afternoon' => new Schema(
+                                                        type: DataType::ARRAY,
+                                                        description: 'Các địa điểm cho buổi chiều',
+                                                        items: new Schema(
+                                                            type: DataType::OBJECT,
+                                                            properties: [
+                                                                'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
+                                                                'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
+                                                                'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
+                                                                'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
+                                                                'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
+                                                                'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
+                                                                'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
+                                                            ],
+                                                            required: ['type', 'name', 'address', 'description']
+                                                        )
+                                                    ),
+                                                    'evening' => new Schema(
+                                                        type: DataType::ARRAY,
+                                                        description: 'Các địa điểm cho buổi tối',
+                                                        items: new Schema(
+                                                            type: DataType::OBJECT,
+                                                            properties: [
+                                                                'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
+                                                                'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
+                                                                'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
+                                                                'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
+                                                                'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
+                                                                'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
+                                                                'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
+                                                            ],
+                                                            required: ['type', 'name', 'address', 'description']
+                                                        )
                                                     )
-                                                ),
-                                                'lunch' => new Schema(
-                                                    type: DataType::ARRAY,
-                                                    description: 'Các địa điểm cho buổi trưa',
-                                                    items: new Schema(
-                                                        type: DataType::OBJECT,
-                                                        properties: [
-                                                            'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
-                                                            'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
-                                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
-                                                            'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
-                                                            'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
-                                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
-                                                            'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
-                                                        ],
-                                                        required: ['type', 'name', 'address', 'description']
-                                                    )
-                                                ),
-                                                'afternoon' => new Schema(
-                                                    type: DataType::ARRAY,
-                                                    description: 'Các địa điểm cho buổi chiều',
-                                                    items: new Schema(
-                                                        type: DataType::OBJECT,
-                                                        properties: [
-                                                            'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
-                                                            'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
-                                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
-                                                            'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
-                                                            'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
-                                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
-                                                            'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
-                                                        ],
-                                                        required: ['type', 'name', 'address', 'description']
-                                                    )
-                                                ),
-                                                'evening' => new Schema(
-                                                    type: DataType::ARRAY,
-                                                    description: 'Các địa điểm cho buổi tối',
-                                                    items: new Schema(
-                                                        type: DataType::OBJECT,
-                                                        properties: [
-                                                            'type' => new Schema(type: DataType::STRING, description: 'Loại địa điểm: "food" hoặc "sightseeing"'),
-                                                            'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
-                                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
-                                                            'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
-                                                            'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
-                                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
-                                                            'food_type' => new Schema(type: DataType::STRING, description: 'Loại ẩm thực (chỉ cho địa điểm ăn uống)')
-                                                        ],
-                                                        required: ['type', 'name', 'address', 'description']
-                                                    )
-                                                )
-                                            ],
-                                            // Đảm bảo thứ tự các key trong JSON
-                                            propertyOrdering: ['morning', 'lunch', 'afternoon', 'evening']
-                                        )
-                                    ],
-                                    required: ['day', 'times'],
-                                    // Đảm bảo thứ tự các key trong JSON
-                                    propertyOrdering: ['day', 'times']
+                                                ],
+                                                // Đảm bảo thứ tự các key trong JSON
+                                                propertyOrdering: ['morning', 'lunch', 'afternoon', 'evening']
+                                            )
+                                        ],
+                                        required: ['day', 'times'],
+                                        // Đảm bảo thứ tự các key trong JSON
+                                        propertyOrdering: ['day', 'times']
+                                    )
                                 )
-                            )
-                        ],
-                        required: ['days'],
-                        // Đảm bảo thứ tự các key trong JSON
-                        propertyOrdering: ['days']
+                            ],
+                            required: ['days'],
+                            // Đảm bảo thứ tự các key trong JSON
+                            propertyOrdering: ['days']
+                        )
                     )
                 )
-            )
-            ->generateContent($prompt);
+                ->generateContent($prompt);
 
-        $response = $response->text();
-        $response = json_decode($response, true);
+            $response = $response->text();
+            $response = json_decode($response, true);
+        } else {
+            $testData = file_get_contents(base_path('database/test.json'));
+            $response = json_decode($testData, true);
+        }
+
+        DB::beginTransaction();
+        try {
+            $history = History::create([
+                'user_id' => Auth::id() ?? 1, // Default to 1 if no user is authenticated
+                'title' => "Lịch trình du lịch tại $location",
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'cost' => 0,
+            ]);
+
+            foreach ($response['days'] as $dayData) {
+                $day = $dayData['day'];
+                foreach ($dayData['times'] as $dayTime => $items) {
+                    $historyItem = HistoryItem::create([
+                        'history_id' => $history->id,
+                        'day_number' => $day,
+                        'day_time' => $dayTime,
+                    ]);
+                    foreach ($items as $item) {
+                        if ($item['type'] === 'food') {
+                            HistoryFood::create([
+                                'history_item_id' => $historyItem->id,
+                                'name' => $item['name'],
+                                'description' => $item['description'],
+                                'address' => $item['address'],
+                                'food_type' => $item['food_type'] ?? null,
+                                'latitude' => $item['latitude'],
+                                'longitude' => $item['longitude'],
+                            ]);
+                        } elseif ($item['type'] === 'sightseeing') {
+                            HistorySightseeing::create([
+                                'history_item_id' => $historyItem->id,
+                                'name' => $item['name'],
+                                'address' => $item['address'],
+                                'latitude' => $item['latitude'],
+                                'longitude' => $item['longitude'],
+                                'description' => $item['description'],
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'error' => 'Có lỗi xảy ra khi tạo lịch trình du lịch.',
+                'message' => $e->getMessage(),
+            ];
+        }
+
         return $response;
     }
 
@@ -252,7 +309,7 @@ class AIService
     //             new TextPart($prompt),
     //         );
     //     $response = $response->text();
-    //     $response = preg_replace('/^```json\s*|\s*```$/', '', $response);
+    //     $response = preg_reitem('/^```json\s*|\s*```$/', '', $response);
     //     $response = json_decode($response, true);
 
     //     DB::beginTransaction();
