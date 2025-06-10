@@ -24,7 +24,7 @@ Route::get('/test-ai-tour', function (\Illuminate\Http\Request $request) {
     $numberOfDays = (int) $request->query('numberOfDays', 2);
 
     $aiService = new AIService();
-    $result = $aiService->getTour($location, $foodType, $time);
+    $result = $aiService->getTour($location, $foodType, $time, $numberOfDays);
 
     return response()->json($result);
 });
