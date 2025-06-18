@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     npm \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    libicu-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install zip pdo_mysql gd bcmath \
+    && docker-php-ext-install zip pdo_mysql gd bcmath intl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
