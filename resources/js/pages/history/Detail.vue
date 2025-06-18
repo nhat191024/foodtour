@@ -1,6 +1,7 @@
 <script setup>
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
+import { Link } from '@inertiajs/vue3';
 import { reactive, computed } from 'vue';
 import { Heart } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
@@ -8,17 +9,21 @@ import { router } from '@inertiajs/vue3';
 const props = defineProps({
     data: Object
 });
+
 const history = computed(() => {
     if (!props.data || !props.data.items) {
         return {};
     }
 
     return props.data.items.reduce((accumulator, currentItem) => {
+        const dayKey = currentItem.day_number;
+
         if (!accumulator[dayKey]) {
             accumulator[dayKey] = [];
         }
 
         accumulator[dayKey].push(currentItem);
+
         return accumulator;
     }, {});
 });
@@ -46,7 +51,6 @@ const loadingStates = reactive({});
 
 const toggleFavoriteSightseeing = (sightseeingId) => {
     loadingStates[sightseeingId] = true;
-
     router.post(route('sightseeing.toggle-favorite', { sightseeing: sightseeingId }), {}, {
         preserveScroll: true,
         onFinish: () => {
@@ -57,7 +61,6 @@ const toggleFavoriteSightseeing = (sightseeingId) => {
 
 const toggleFavoriteFood = (foodId) => {
     loadingStates[foodId] = true;
-
     router.post(route('food.toggle-favorite', { food: foodId }), {}, {
         preserveScroll: true,
         onFinish: () => {
@@ -70,7 +73,6 @@ const toggleFavoriteFood = (foodId) => {
 <template>
     <ClientLayout>
         <div class="flex flex-col w-full h-fit gap-6 p-10">
-
             <div class="flex flex-col items-start gap-2">
                 <p class="font-semibold">Kết quả gợi ý cho chuyến đi của bạn</p>
                 <h1 class="text-4xl font-semibold">{{ data.title }}</h1>
@@ -81,17 +83,14 @@ const toggleFavoriteFood = (foodId) => {
                     {{ data.description }}
                 </p>
             </div>
-
             <div class="w-full border-b border-gray-300"></div>
 
             <!-- days loop here -->
             <div v-for="(itemsInDay, dayLabel) in history" :key="dayLabel">
-
                 <div class="flex flex-col w-full h-fit gap-1 mb-3">
                     <div>
                         <p class="font-semibold">{{ dayLabel }}</p>
                     </div>
-
                     <div v-for="item in itemsInDay" class="flex flex-col gap-2">
                         <div class="flex flex-col gap-0">
                             <h1 class="text-2xl font-semibold">{{ getDayTimeVietnamese(item.day_time) }}</h1>
@@ -102,7 +101,6 @@ const toggleFavoriteFood = (foodId) => {
                                 <p class="font-semibold pl-1">Địa điểm gợi ý</p>
                             </div>
                         </div>
-
                         <div
                             class="flex flex-nowrap gap-6 overflow-x-auto w-full min-w-0 scrollbar-hide overflow-visible p-3">
                             <div v-for="foodItem in item.food" :key="foodItem.id"
@@ -157,7 +155,6 @@ const toggleFavoriteFood = (foodId) => {
                 </div>
                 <div class="w-full border-b border-gray-300"></div>
             </div>
-
             <div class="flex flex-col items-start gap-1">
                 <p class="text-gray-500 text-sm">@ 2024-2025</p>
                 <p class="text-gray-500 text-sm">Powered by Google Gemini</p>
