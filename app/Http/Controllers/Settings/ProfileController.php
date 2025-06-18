@@ -14,13 +14,52 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
     /**
+     * Show the user's profile page.
+     */
+    public function index(Request $request): Response
+    {
+        if (!auth()->check()) {
+            abort(401);
+        }
+        return Inertia::render('profile/Index', [
+            'status' => $request->session()->get('status')
+        ]);
+    }
+
+    /**
      * Show the user's profile settings page.
      */
-    public function edit(Request $request): Response
+    public function changePassword(Request $request): Response
     {
-        return Inertia::render('settings/Profile', [
+        if (!auth()->check()) {
+            abort(401);
+        }
+
+        return Inertia::render('settings/Password', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+        ]);
+    }
+
+    public function changeAppearance(Request $request): Response
+    {
+        if (!auth()->check()) {
+            abort(401);
+        }
+
+        return Inertia::render('settings/Appearance', [
+            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'status' => $request->session()->get('status'),
+        ]);
+    }
+
+    public function edit(Request $request): Response
+    {
+        if (!auth()->check()) {
+            abort(401);
+        }
+        return Inertia::render('settings/Profile', [
+
         ]);
     }
 
@@ -29,6 +68,10 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
         $request->user()->fill($request->validated());
 
         if ($request->user()->isDirty('email')) {
@@ -45,6 +88,10 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
