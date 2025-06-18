@@ -7,7 +7,7 @@ services:
     container_name: food-tourism-app
     restart: unless-stopped
     ports:
-      - "8002:80"
+      - '10001:80'
     volumes:
       - .:/var/www/html
       - /var/www/html/vendor
