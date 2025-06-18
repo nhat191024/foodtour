@@ -1,0 +1,33 @@
+{
+  "days": [
+    {
+      "day": "Ngày 1 (12/06/2025 - 32.5°C, Dông kèm mưa đá nhẹ)",
+      "times": {
+        "morning": [
+          {
+            "address": "13 Lò Đúc, Ngô Thì Nhậm, Hai Bà Trưng, Hà Nội",
+            "description": "Bắt đầu ngày mới với bát phở tái lăn trứ danh của Phở Thìn. Thịt bò được xào nhanh với tỏi và gừng, giữ độ mềm và thơm, hòa quyện trong nước dùng xương hầm đậm đà. Đây là lựa chọn hoàn hảo để sưởi ấm trong tiết trời dông và có một bữa sáng ngon miệng.",
+            "name": "Phở Thìn Lò Đúc",
+            "type": "food",
+            "food_type": "Phở và các món nước,Cơm và món mặn",
+            "latitude": 21.0189,
+            "longitude": 105.8573
+          },
+          {
+            "address": "57B Đinh Tiên Hoàng, Hàng Bạc, Hoàn Kiếm, Hà Nội",
+            "description": "Sau bữa sáng, hãy đến Nhà hát Múa rối nước Thăng Long để thưởng thức một buổi biểu diễn nghệ thuật truyền thống độc đáo của Việt Nam. Đây là một hoạt động trong nhà lý tưởng để tránh mưa đá và dông, đồng thời mang lại trải nghiệm giải trí và văn hóa sâu sắc, phù hợp với sở thích của bạn.",
+            "name": "Nhà hát Múa rối nước Thăng Long",
+            "type": "sightseeing",
+            "latitude": 21.0305,
+            "longitude": 105.8523
+          }
+        ],
+        "lunch": [],
+        "afternoon": [],
+        "evening": []
+      }
+    }
+  ],
+  "description": "Chào mừng bạn đến với Hà Nội! Lịch trình này được thiết kế riêng cho bạn với trọng tâm là ẩm thực Phở và các món nước, cùng các món cơm mặn, kết hợp với các điểm tham quan văn hóa. Do thời tiết ngày 12/06/2025 dự kiến có dông kèm mưa đá nhẹ, chúng tôi đã ưu tiên các hoạt động trong nhà và các địa điểm gần nhau để đảm bảo chuyến đi thoải mái nhất cho bạn. Đối với sở thích 'Tắm biển', rất tiếc Hà Nội không có biển nên chúng tôi không thể đáp ứng yêu cầu này, mong bạn thông cảm. Tuy nhiên, chuyến đi vẫn sẽ mang lại những trải nghiệm 'Giải trí' và khám phá văn hóa độc đáo. Chúc bạn có một hành trình ẩm thực và văn hóa đáng nhớ tại thủ đô ngàn năm văn hiến!"
+}
+
