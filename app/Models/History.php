@@ -17,6 +17,9 @@ class History extends Model
         'start_date',
         'end_date',
         'cost',
+        'description',
+        'company',
+        'interests',
     ];
 
     /**
@@ -33,5 +36,10 @@ class History extends Model
     public function items()
     {
         return $this->hasMany(HistoryItem::class);
+    }
+
+    public function tripCosts()
+    {
+        return $this->hasMany(TripHistoryCost::class);
     }
 }
