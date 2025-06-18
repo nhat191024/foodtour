@@ -19,6 +19,8 @@ use App\Models\HistoryFood;
 use App\Models\HistorySightseeing;
 
 use App\Service\OpenWeatherService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Log;
 
 class AIService
 {
@@ -31,19 +33,43 @@ class AIService
         $this->weatherService = app(OpenWeatherService::class);
     }
 
-    // public function
-
-    public function getTour(string $location, string $foodType, string $time, ?int $numberOfDays = 0, ?string $startDate = null, ?string $endDate = null)
+    /**
+     * Tạo một lịch trình du lịch ẩm thực và tham quan chi tiết tại $location.
+     *
+     *
+     * @param string $location
+     * @param string $foodType đa dạng loại món ăn
+     * @param string $time buổi sáng/trưa/chiều/tối
+     * @param string $company đi cùng với ai
+     * @param string $interests sở thích, đặc điểm khác
+     * @param int|null $numberOfDays số ngày đi
+     * @param string|null $startDate chủ yếu để phục vụ lấy thời tiết
+     * @param string|null $endDate chủ yếu để phục vụ lấy thời tiết
+     * @return array|null function này sẽ chỉ return id của bản ghi History mới được tạo
+     */
+    public function getTour
+    (
+        string $location,
+        string $foodType,
+        string $time,
+        string $company,
+        string $interests,
+        ?int $numberOfDays = 0,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ) : array
     {
         // add vietnam to the location if not already present
         if (!str_contains($location, 'Vietnam')) {
             $location .= ', Vietnam';
         }
-        //if startDate and endDate are not provided, use the current date
+        if (!str_contains($location, 'Vietnam')) {
+            $location .= ', Vietnam';
+        }
         $startDate ??= date('Y-m-d');
         $endDate ??= date('Y-m-d', strtotime("+$numberOfDays days"));
         $weather = $this->weatherService->getWeatherInVietnam($location, $startDate, $endDate);
-        //if numberOfDays is not provided, default to 1. it = 0 because weather service requires a start date and end date
+        // weather service requires a start date and end date
         $numberOfDays = $numberOfDays > 0 ? $numberOfDays : 1;
 
         $response = null;
@@ -55,8 +81,10 @@ class AIService
         - Loại ẩm thực chính cho chuyến đi: $foodType (áp dụng cho các địa điểm ăn uống được gợi ý).
         - Các địa điểm tham quan nên ở gần các địa điểm ăn uống, không quá xa.
         - Thông tin thời tiết cho khu vực này: " . json_encode($weather, JSON_UNESCAPED_UNICODE) . ". Hãy sử dụng thông tin này để gợi ý các địa điểm ăn uống và tham quan phù hợp với thời tiết.
-        - Thời gian trong ngày bạn muốn tập trung: $time (Có thể là 'morning', 'lunch', 'afternoon', 'evening', hoặc 'full day'). Nếu là 'full day', hãy bao gồm tất cả các khung thời gian sáng, trưa, chiều, tối.
+        - Thời gian trong ngày tôi muốn tập trung: $time (Có thể là 'morning', 'lunch', 'afternoon', 'evening', hoặc 'full day'). Nếu là 'full day', hãy bao gồm tất cả các khung thời gian sáng, trưa, chiều, tối. Không được tự ý gợi ý thêm ngoài những buổi trong ngày tôi chọn.
         - Số ngày: $numberOfDays
+        - Tôi đi cùng với : $company
+        - Những đặc điểm tôi quan tâm: $interests
 
         **Đối với mỗi khung thời gian (morning, lunch, afternoon, evening) trong mỗi ngày, hãy gợi ý ít nhất một địa điểm. Mỗi địa điểm phải có các thông tin sau:**
         - **'type'**: Phải là 'food' (cho địa điểm ăn uống) hoặc 'sightseeing' (cho địa điểm tham quan).
@@ -67,8 +95,9 @@ class AIService
         - **'description'**: Mô tả chi tiết về địa điểm và lý do gợi ý (ví dụ: món ăn đặc trưng, điểm nổi bật của địa điểm tham quan).
         - **'food_type'**: Chỉ bao gồm trường này và gán giá trị '$foodType' nếu 'type' là 'food'. Không bao gồm trường này nếu 'type' là 'sightseeing'.
 
-        **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
+        Lưu ý: Các đặc điểm quan tâm sẽ không còn bắt buộc nếu gần địa điểm được chọn không thể đáp ứng được, khi điều đó xảy ra, hãy đưa ra gợi ý gần giống kèm lời xin lỗi và giải thích.
         ";
+        // **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
 
             $response = $this->client
                 ->generativeModel(
@@ -173,11 +202,23 @@ class AIService
                                         // Đảm bảo thứ tự các key trong JSON
                                         propertyOrdering: ['day', 'times']
                                     )
-                                )
+                                ),
+                                'description'  => new Schema(
+                                    type: DataType::STRING,
+                                    description: 'Một đoạn mô tả ngắn miêu tả chung về toàn bộ chuyến đi. Có thể chèn lời nhắc nhở, lời chúc, lưu ý, v.v...'
+                                ),
+                                'interests'  => new Schema(
+                                    type: DataType::STRING,
+                                    description: 'Những Sở thích của người dùng đã chọn (viết dưới dạng tiếng Việt có dấu, phiên bản viết đúng chính tả)'
+                                ),
+                                'company'  => new Schema(
+                                    type: DataType::STRING,
+                                    description: 'Đối tượng mà người dùng đi tham quan cùng (viết dưới dạng tiếng Việt có dấu, phiên bản viết đúng chính tả)'
+                                ),
                             ],
-                            required: ['days'],
+                            required: ['days', 'description', 'interests', 'company'],
                             // Đảm bảo thứ tự các key trong JSON
-                            propertyOrdering: ['days']
+                            propertyOrdering: ['days', 'description', 'company', 'interests']
                         )
                     )
                 )
@@ -189,7 +230,7 @@ class AIService
             $testData = file_get_contents(base_path('database/test.json'));
             $response = json_decode($testData, true);
         }
-
+        Log::info('got response:', $response);
         DB::beginTransaction();
         try {
             $history = History::create([
@@ -197,11 +238,15 @@ class AIService
                 'title' => "Lịch trình du lịch tại $location",
                 'start_date' => $startDate,
                 'end_date' => $endDate,
+                'description' => $response['description'],
+                'company' => $response['company'],
+                'interests' => $response['interests'],
                 'cost' => 0,
             ]);
 
             foreach ($response['days'] as $dayData) {
                 $day = $dayData['day'];
+                $day = $this->formattedDayTitle($dayData['day']);
                 foreach ($dayData['times'] as $dayTime => $items) {
                     $historyItem = HistoryItem::create([
                         'history_id' => $history->id,
@@ -234,141 +279,41 @@ class AIService
             }
 
             DB::commit();
+
+            //* always get the 'truth' from database
+            $returnData = $history->load('items', 'items.sightseeing', 'items.food');
+            return [
+                'success' => true,
+                'data' => $returnData
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
             return [
+                'success' => false,
                 'error' => 'Có lỗi xảy ra khi tạo lịch trình du lịch.',
                 'message' => $e->getMessage(),
             ];
         }
 
-        return $response;
+        //? this is only for testing, never send raw AI response to the client
+        // return $response;
+        // instead, return an error to notify the client
+        return [
+            'success' => false,
+            'error' => 'Vui lòng thử lại sau.',
+            'message' => 'Error',
+            'data' => $response
+        ];
     }
 
-    // public function getNewTourItem(TourItem $tourItem)
-    // {
-    //     $deletedTourItems = TourItem::whereHas('tour', function ($query) {
-    //         $query->where('user_id', Auth::id());
-    //     })->where('tour_id', $tourItem->tour_id)
-    //         ->where('status', 0)
-    //         ->get();
-    //     $existingTourItems = TourItem::whereHas('tour', function ($query) {
-    //         $query->where('user_id', Auth::id());
-    //     })->where('tour_id', $tourItem->tour_id)
-    //         ->where('status', 1)
-    //         ->get();
+    //* Convert from "Ngày 1 (12/06/2025 - 32.5°C, Dông kèm mưa đá nhẹ)" to "Ngày 1 • 12/06/2025 • 32.5°C, Dông kèm mưa đá nhẹ"
+    protected function formattedDayTitle(string $day_title): string
+    {
+        return str_replace(
+            [' (', ')', '-', ','],
+            [' • ', '', '•', ' • Thời tiết:'],
+            $day_title
+        );
+    }
 
-    //     $nearbyLocation = $tourItem->tour->name;
-    //     $foodType = $tourItem->tour->food_type;
-    //     $suggestedTime = $tourItem->tour->time;
-    //     $day = $tourItem->day;
-    //     $deletedTourItemsAsString = $deletedTourItems->map(function ($item) {
-    //         return $item->name . '(' . $item->address . ')';
-    //     })->implode(', ');
-
-    //     $existingTourItemsAsString = $existingTourItems->map(function ($item) {
-    //         return $item->name . '(' . $item->address . ')';
-    //     })->implode(', ');
-
-    //     $prompt = "
-    //     Lên lịch trình food tour gần $nearbyLocation với các yêu cầu sau:
-
-    //     - Nơi đi (Trong phạm vi huyện/tỉnh thành): $nearbyLocation
-    //     - Loại món ăn: $foodType
-    //     - Thời gian đi (sáng/trưa/chiều/tối/cả ngày): $suggestedTime
-
-    //     Hãy đề xuất một quán ăn đạt tiêu chuẩn trên, trả về kết quả dưới định dạng chuỗi JSON hợp lệ. Cấu trúc JSON phải là một object với các trường sau:
-
-    //     - 'name': Tên địa điểm ăn uống (string)
-    //     - 'address': Địa chỉ (string)
-    //     - 'latitude': Vĩ độ (number)
-    //     - 'longitude': Kinh độ (number)
-    //     - 'description': Mô tả ngắn (string)
-    //     - 'suggested_time': Buổi gợi ý (string, ví dụ: 'sáng', 'trưa', 'tối')
-    //     - 'food_type': Tên loại món ăn (string, phù hợp với bảng food_types)
-
-    //     Lưu ý 1: Loại trừ các địa điểm đã bị xóa như sau:
-    //     '''
-    //     $deletedTourItemsAsString
-    //     '''
-    //     Lưu ý 2: Loại trừ các địa điểm đã có sẵn như sau:
-    //     '''
-    //     $existingTourItemsAsString
-    //     '''
-
-    //      **Chỉ trả về một chuỗi JSON hợp lệ duy nhất, không bao gồm bất kỳ ký tự bao bọc nào như ```json hoặc ```.**
-    //     ";
-
-    //     // return $prompt;
-    //     $generationConfig = new GenerationConfig();
-    //     $generationConfig = $generationConfig->withTemperature(self::TEMPERATURE);
-
-    //     $response = $this->client->generativeModel(self::GEMINI_2_0_FLASH)
-    //         ->withGenerationConfig($generationConfig)
-    //         ->generateContent(
-    //             new TextPart($prompt),
-    //         );
-    //     $response = $response->text();
-    //     $response = preg_reitem('/^```json\s*|\s*```$/', '', $response);
-    //     $response = json_decode($response, true);
-
-    //     DB::beginTransaction();
-    //     try {
-    //         $newTourItem = TourItem::create([
-    //             'tour_id' => $tourItem->tour_id,
-    //             'day' => $day,
-    //             'name' => $response['name'],
-    //             'address' => $response['address'],
-    //             'description' => $response['description'],
-    //             'latitude' => $response['latitude'],
-    //             'longitude' => $response['longitude'],
-    //             'suggested_time' => $suggestedTime,
-    //             'status' => 1,
-    //         ]);
-
-    //         DB::commit();
-    //         return $newTourItem;
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return [
-    //             'error' => 'Có lỗi xảy ra khi tạo địa điểm mới.',
-    //             'message' => $e->getMessage(),
-    //         ];
-    //     }
-    // }
-
-    // public function getTourById(int $tourId)
-    // {
-    //     $tour = Tour::with(['tourItems' => function ($query) {
-    //         $query->where('status', 1);
-    //     }])->find($tourId);
-
-    //     if (!$tour) {
-    //         return null;
-    //     }
-
-    //     $formattedResponse = [];
-    //     foreach ($tour->tourItems->groupBy('day') as $day => $items) {
-    //         $formattedResponse[$day] = [];
-    //         foreach ($items->groupBy('suggested_time') as $time => $timeItems) {
-    //             $formattedResponse[$day][$time] = $timeItems->map(function ($item) {
-    //                 return [
-    //                     'id' => $item->id,
-    //                     'tour_id' => $item->tour_id,
-    //                     'day' => $item->day,
-    //                     'name' => $item->name,
-    //                     'address' => $item->address,
-    //                     'latitude' => (float)$item->latitude,
-    //                     'longitude' => (float)$item->longitude,
-    //                     'description' => $item->description,
-    //                     'suggested_time' => $item->suggested_time,
-    //                     'food_type' => $item->food_type ?? null,
-    //                     'notes' => $item->notes ?? null,
-    //                 ];
-    //             })->toArray();
-    //         }
-    //     }
-
-    //     return $formattedResponse;
-    // }
 }
