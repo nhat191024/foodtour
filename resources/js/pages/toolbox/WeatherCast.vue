@@ -1,8 +1,8 @@
 <script setup>
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { Link, router, usePage } from '@inertiajs/vue3';
-import { ref, computed, watch, nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 import {
     Cloud,
     CloudRain,

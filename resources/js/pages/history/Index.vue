@@ -2,7 +2,7 @@
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Link } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Calendar, MapPin, Users, DollarSign, Heart } from 'lucide-vue-next';
 
 const props = defineProps({

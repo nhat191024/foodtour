@@ -1,7 +1,6 @@
 <script setup>
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { Link } from '@inertiajs/vue3';
 import { reactive, computed } from 'vue';
 import { Heart } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';

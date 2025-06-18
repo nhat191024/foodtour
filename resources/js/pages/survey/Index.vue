@@ -4,7 +4,6 @@ import Button from '@/components/ui/button/Button.vue';
 import { ref, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2 } from 'lucide-vue-next';
-import { Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     questions: Array,

@@ -3,7 +3,7 @@ import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Link } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
-import { Calendar, MapPin, Users, DollarSign, Heart, Star, Utensils, StickyNote, Navigation } from 'lucide-vue-next';
+import { Calendar, MapPin, Heart, Star, Utensils, StickyNote, Navigation } from 'lucide-vue-next';
 import { router } from '@inertiajs/vue3';
 
 const props = defineProps({

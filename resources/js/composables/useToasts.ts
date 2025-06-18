@@ -21,10 +21,9 @@ export function showToast(message: string, type: 'success' | 'error' = 'success'
 
   timeoutId = window.setTimeout(() => {
     hideToast();
-  }, 6000) 
+  }, 6000)
 }
 
-// Hàm mới để nút "X" có thể gọi
 export function hideToast() {
   if (timeoutId) {
     clearTimeout(timeoutId);
