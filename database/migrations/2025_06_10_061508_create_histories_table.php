@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('start_date');
             $table->string('end_date');
             $table->string('cost');
+            $table->text('description');
+            $table->string('company');
+            $table->string('interests');
             $table->timestamps();
         });
     }
