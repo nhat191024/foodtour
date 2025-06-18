@@ -39,7 +39,7 @@ const socialLinks = [
       <!-- Brand Info -->
       <div class="col-span-1 md:col-span-2 flex flex-col items-start">
         <Link :href="route('home')">
-            <p class="text-2xl font-bold text-white mb-4">FoodTourVNR</p>
+            <p class="text-2xl font-bold text-white mb-4">FoodTourVN</p>
         </Link>
         <p class="text-sm leading-relaxed max-w-md">
           Khám phá những trải nghiệm ẩm thực tuyệt vời nhất và những món ngon đặc sản tại VNR cùng FoodTourVNR. Người bạn đồng hành đáng tin cậy cho những cuộc phiêu lưu ẩm thực đáng nhớ.
@@ -78,7 +78,7 @@ const socialLinks = [
 
     <!-- Copyright -->
     <div class="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
-      &copy; {{ currentYear }} FoodTourVNR. All rights reserved.
+      &copy; {{ currentYear }} FoodTourVN. All rights reserved.
     </div>
   </footer>
 </template>
