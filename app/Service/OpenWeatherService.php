@@ -207,7 +207,7 @@ class OpenWeatherService
                 }
                 return [
                     'name' => $location['display_name'],
-                    'admin1' => ''
+                    'country' => 'Việt Nam'
                 ];
             }, $data);
         }
