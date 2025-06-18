@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('history_item_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('description');
+            $table->text('description');
             $table->string('address');
             $table->string('food_type')->nullable();
             $table->string('note')->nullable();
