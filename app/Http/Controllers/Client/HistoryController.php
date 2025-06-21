@@ -41,7 +41,10 @@ class HistoryController extends Controller
         }
         $user = Auth::user();
         if (!$user) return abort(403);
-        $historyRecords = History::where('user_id', $user->id)->orderBy('created_at', 'desc')->get();
+        $historyRecords = History::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->with('tripCosts')
+            ->get();
         return Inertia::render('history/Index', [
             'data' => $historyRecords
         ]);
