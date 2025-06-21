@@ -5,24 +5,24 @@ import { Link } from '@inertiajs/vue3';
 const currentYear = new Date().getFullYear()
 
 const footerNav = [
-  {
-    title: 'Profile',
-    items: [
-      { name: 'Profile', route: 'profile' },
-      { name: 'Favorite', route: 'profile.favorite' },
-      { name: 'History', route: 'history.index' },
-      { name: 'About', route: 'home' },
-    ],
-  },
-  {
-    title: 'Links',
-    items: [
-      { name: 'Home', route: 'home' },
-      { name: 'Start Now', route: 'survey.start' },
-      { name: 'Weathercast', route: 'weathercast' },
-      { name: 'Calculator', route: 'calculator' },
-    ],
-  }
+    {
+        title: 'Hồ sơ',
+        items: [
+            { name: 'Hồ sơ', route: 'profile' },
+            { name: 'Yêu thích', route: 'profile.favorite' },
+            { name: 'Lịch sử', route: 'history.index' },
+            { name: 'Giới thiệu', route: 'home' },
+        ],
+    },
+    {
+        title: 'Liên kết',
+        items: [
+            { name: 'Trang chủ', route: 'home' },
+            { name: 'Bắt đầu ngay', route: 'survey.start' },
+            { name: 'Dự báo thời tiết', route: 'weathercast' },
+            { name: 'Máy tính', route: 'calculator' },
+        ],
+    }
 ]
 
 const socialLinks = [
@@ -78,7 +78,7 @@ const socialLinks = [
 
     <!-- Copyright -->
     <div class="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
-      &copy; {{ currentYear }} FoodTourVN. All rights reserved.
+    &copy; {{ currentYear }} FoodTourVN. Đã đăng ký bản quyền.
     </div>
   </footer>
 </template>

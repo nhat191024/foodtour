@@ -41,7 +41,7 @@ const navItems = [
                 </Link>
                 <div v-if="user">
                     <Link :href="route('profile')" class="flex items-center gap-3">
-                        <span class="text-sm font-medium">{{ user.name }}</span>
+                        <!-- <span class="text-sm font-medium">{{ user.name }}</span> -->
                         <img :src="user.avatar ?? 'https://ui-avatars.com/api/?name=' + user.name" :alt="user.name"
                             class="w-8 h-8 rounded-full" />
                     </Link>
@@ -97,7 +97,7 @@ const navItems = [
                                 :alt="user.name"
                                 class="w-10 h-10 rounded-full" />
                             <div class="flex flex-col">
-                                <span class="text-base font-medium text-gray-900">{{ user.name }}</span>
+                                <!-- <span class="text-base font-medium text-gray-900">{{ user.name }}</span> -->
                                 <span class="text-sm text-gray-500">Xem hồ sơ</span>
                             </div>
                         </Link>
