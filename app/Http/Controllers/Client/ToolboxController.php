@@ -59,6 +59,20 @@ class ToolboxController extends Controller
         ]);
     }
 
+    public function updateTripCost(Request $request, TripHistoryCost $cost)
+    {
+        if ($cost->history->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'value' => 'required|numeric|min:0',
+        ]);
+        $cost->update($validated);
+
+        return back()->with('success', 'Đã cập nhật chi phí.');
+    }
+
     public function searchLocations(Request $request)
     {
         $location = $request->get('q');
