@@ -40,11 +40,11 @@ Route::get('auth/google', [LoginController::class, 'redirectToGoogle'])->name('l
 Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 Route::post('/sightseeing/{sightseeing}/toggle-favorite', [HistoryController::class, 'toggleSightseeingFavorite'])
-      ->name('sightseeing.toggle-favorite')
-      ->middleware('auth');
+    ->name('sightseeing.toggle-favorite')
+    ->middleware('auth');
 Route::post('/food/{food}/toggle-favorite', [HistoryController::class, 'toggleFoodFavorite'])
-      ->name('food.toggle-favorite')
-      ->middleware('auth');
+    ->name('food.toggle-favorite')
+    ->middleware('auth');
 
 Route::get('/weathercast', [ToolboxController::class, 'weather'])->name('weathercast');
 Route::get('/calculator/tour/{id?}', [ToolboxController::class, 'calculator'])->name('calculator');
@@ -52,9 +52,15 @@ Route::get('/search-locations', [ToolboxController::class, 'searchLocations'])->
 Route::get('/weathercast/get', [ToolboxController::class, 'getWeather'])->name('get-weather');
 
 Route::post('/calculator/tour/{history}/add-cost', [ToolboxController::class, 'storeTripCost'])
-      ->name('calculator.store_cost')
-      ->middleware('auth');
+    ->name('calculator.store_cost')
+    ->middleware('auth');
 
 Route::delete('/trip-costs/{cost}', [ToolboxController::class, 'destroyTripCost'])
-->name('calculator.destroy_cost')
-->middleware('auth');
+    ->name('calculator.destroy_cost')
+    ->middleware('auth');
+
+Route::middleware(['auth'])->group(function () {
+    Route::delete('/history-food/{food}', [HistoryController::class, 'destroyFood'])->name('history.food.destroy');
+    Route::delete('/history-sightseeing/{sightseeing}', [HistoryController::class, 'destroySightseeing'])->name('history.sightseeing.destroy');
+    Route::post('/history-items/{type}/{id}/replace', [HistoryController::class, 'replaceItem'])->name('history.item.replace');
+});
