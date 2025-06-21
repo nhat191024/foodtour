@@ -363,7 +363,7 @@ class AIService
             );
 
             $response = $this->client
-                ->generativeModel(model: 'gemini-1.5-flash-latest')
+                ->generativeModel(model: 'gemini-2.5-flash')
                 ->withGenerationConfig(
                     generationConfig: new GenerationConfig(
                         responseMimeType: ResponseMimeType::APPLICATION_JSON,
