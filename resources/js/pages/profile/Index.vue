@@ -90,12 +90,12 @@ const handleLogout = () => {
                 <div
                     class="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm min-h-[300px] flex items-center justify-center text-gray-400 dark:text-gray-600 border border-dashed border-gray-300 dark:border-gray-700">
                     <!-- TODO: Implement more stuff here  -->
-                     Nothing is here yet...
+                     Chưa có nội dung nào ở đây...
                 </div>
                 <div class="p-4 md:p-8">
                     <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button">
                     <Button variant="outline" class="w-full text-red-500 border-red-500 hover:bg-red-50">
-                        Log out
+                        Đăng xuất
                     </Button>
                     </Link>
                 </div>
