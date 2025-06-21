@@ -170,11 +170,12 @@ const selectExclusiveOption = (questionId, exclusiveValue) => {
 };
 
 initializeAnswer();
+const hasErrors = computed(() => Object.keys(form.errors).length > 0);
 </script>
 
 <template>
     <ClientLayout>
-        <div class="rounded-lg border shadow-lg bg-white p-6 max-w-2xl mx-auto my-8">
+        <div class="rounded-lg border shadow-lg bg-white p-1 md:p-6 max-w-2xl mx-auto my-0 md:my-8">
             <!-- loading overlay -->
             <div v-if="isLoading" class="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
                 <div class="text-center">
@@ -190,43 +191,58 @@ initializeAnswer();
                 </div>
             </div>
 
-            <div class="h-fit flex flex-col p-4 mb-3">
-                <div class="flex items-center justify-between mb-4 md:mb-6">
-                    <!-- <button @click="prevStep" :disabled="currentStep === 0" class="p-4 disabled:opacity-50">
-                    <h6>BACK</h6>
-                </button> -->
+            <div class="flex justify-around md:justify-between items-center w-full mb-3 md:p-0 p-3">
+                <Button :class="'mr-3 disabled:opacity-50 cursor-pointer'" @click="prevStep"
+                    :disabled="currentStep === 0">
+                    Quay lại
+                </Button>
+                <div>
+                    <Button v-if="currentStep === questions.length - 1" @click="submitSurvey"
+                        :disabled="!isCurrentAnswerValid" :class="'cursor-pointer'">
+                        Hoàn thành
+                    </Button>
+                    <Button v-else @click="nextStep" :disabled="!isCurrentAnswerValid" :class="'cursor-pointer'">
+                        Tiếp theo
+                    </Button>
                 </div>
+            </div>
 
-                <div class="flex-1 text-center mb-2">
-                    <div class="text-sm md:text-base mb-2">
-                        ({{ currentStep + 1 }}/{{ questions.length }})
-                    </div>
-                    <div v-if="Object.keys(form.errors).length > 0" class="text-red-500 font-bold text-sm md:text-base">
-                        Vui lòng kiểm tra những lỗi sau và sửa lại theo yêu cầu:
-                    </div>
-                    <div v-if="form.errors" class="text-red-500 font-bold text-sm">
-                        <div v-for="(error, key) in form.errors" :key="key">
-                            {{ error }}
+            <div class="h-fit flex flex-col px-4 pb-4 mb-3">
+                <div class="flex flex-col items-center text-center mb-3">
+                    <!-- Error Display Card -->
+                    <div v-if="hasErrors" role="alert" aria-live="assertive" class="w-full max-w-md">
+                        <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg shadow-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <!-- Warning Icon -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="h-5 w-5 text-red-600">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <span class="font-semibold text-base md:text-lg text-left">
+                                    Vui lòng kiểm tra những lỗi sau và sửa lại theo yêu cầu
+                                </span>
+                            </div>
+                            <ul class="list-disc list-inside text-sm md:text-base text-left">
+                                <li v-for="(error, key) in form.errors" :key="key">
+                                    {{ error }}
+                                </li>
+                            </ul>
                         </div>
                     </div>
+                    <!-- Step Indicator -->
+                    <div class="text-sm md:text-base text-muted-foreground mt-3">
+                        ({{ currentStep + 1 }}/{{ questions.length }})
+                    </div>
                 </div>
+                <!-- <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <button @click="prevStep" :disabled="currentStep === 0" class="p-4 disabled:opacity-50">
+                        <h6>BACK</h6>
+                    </button>
+                </div> -->
 
-                <div class="w-16">
-                    <!-- <button @click="nextStep"
-                        v-if="currentStep < questions.length - 1"
-                        :disabled="!isCurrentAnswerValid"
-                        class="p-4"
-                        :class="{'opacity-50 cursor-not-allowed': !isCurrentAnswerValid}">
-                    <h6>NEXT</h6>
-                </button>
-                <button @click="submitSurvey"
-                        v-if="currentStep === questions.length - 1"
-                        :disabled="!isCurrentAnswerValid"
-                        class="p-4 rounded"
-                        :class="{'opacity-50 cursor-not-allowed': !isCurrentAnswerValid}">
-                    <h6>SUBMIT</h6>
-                </button> -->
-                </div>
 
                 <div class="flex-1 flex flex-col items-center justify-start md:justify-center">
                     <div class="w-full max-w-2xl px-4">
