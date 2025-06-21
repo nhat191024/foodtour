@@ -306,6 +306,80 @@ class AIService
         ];
     }
 
+    /**
+     * get a single replacement item from the AI.
+     *
+     * @param string $type 'food' or 'sightseeing'
+     * @param string $userPrompt The user's new request
+     * @param object $context Context from the original trip (location, interests, vv...)
+     * @param object $oldItem The item being replaced
+     * @return array|null The new item data, or null on failure.
+     */
+    public function getReplacementItem(string $type, string $userPrompt, object $context, object $oldItem): ?array
+    {
+        $location = $context->location;
+        $interests = $context->interests;
+        $company = $context->company;
+        $dayTime = $context->dayTime;
+        $foodType = $context->foodType ?? 'đa dạng';
+
+        $vietnameseType = $type === 'food' ? 'địa điểm ăn uống' : 'địa điểm tham quan';
+
+        $prompt = "
+        Dựa trên một lịch trình du lịch có sẵn tại '$location', hãy tìm một địa điểm THAY THẾ cho địa điểm cũ là '{$oldItem->name}'.
+
+        Thông tin về bối cảnh chuyến đi:
+        - Địa điểm chính: $location
+        - Sở thích chung: $interests
+        - Đi cùng với: $company
+        - Buổi trong ngày: $dayTime
+        - Loại ẩm thực chính (nếu thay thế địa điểm ăn uống): $foodType
+
+        Yêu cầu mới của người dùng là: \"$userPrompt\"
+
+        Nhiệm vụ của bạn là tìm **chỉ một (1)** địa điểm '$vietnameseType' mới phù hợp với yêu cầu của người dùng và bối cảnh trên.
+
+        Đầu ra phải là một object JSON duy nhất, không phải mảng, chứa các thông tin sau:
+        - 'name': Tên của địa điểm mới.
+        - 'address': Địa chỉ cụ thể.
+        - 'latitude': Vĩ độ.
+        - 'longitude': Kinh độ.
+        - 'description': Mô tả chi tiết về địa điểm mới và lý do nó phù-hợp với yêu cầu.
+        - 'food_type': Chỉ bao gồm trường này và gán giá trị '$foodType' nếu loại địa điểm là 'food'.
+        ";
+
+        try {
+            $schema = new Schema(
+                type: DataType::OBJECT,
+                properties: [
+                    'name' => new Schema(type: DataType::STRING),
+                    'address' => new Schema(type: DataType::STRING),
+                    'latitude' => new Schema(type: DataType::NUMBER),
+                    'longitude' => new Schema(type: DataType::NUMBER),
+                    'description' => new Schema(type: DataType::STRING),
+                    'food_type' => new Schema(type: DataType::STRING),
+                ],
+                required: ['name', 'address', 'description', 'latitude', 'longitude']
+            );
+
+            $response = $this->client
+                ->generativeModel(model: 'gemini-1.5-flash-latest')
+                ->withGenerationConfig(
+                    generationConfig: new GenerationConfig(
+                        responseMimeType: ResponseMimeType::APPLICATION_JSON,
+                        responseSchema: $schema
+                    )
+                )
+                ->generateContent($prompt);
+
+            return json_decode($response->text(), true);
+
+        } catch (\Exception $e) {
+            Log::error("AI Service failed to get replacement item: " . $e->getMessage());
+            return null;
+        }
+    }
+
     //* Convert from "Ngày 1 (12/06/2025 - 32.5°C, Dông kèm mưa đá nhẹ)" to "Ngày 1 • 12/06/2025 • 32.5°C, Dông kèm mưa đá nhẹ"
     protected function formattedDayTitle(string $day_title): string
     {
