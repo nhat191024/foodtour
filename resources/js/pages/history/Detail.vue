@@ -137,8 +137,23 @@ const submitReplacement = () => {
             <div class="flex flex-col items-start gap-2">
                 <p class="font-semibold">Kết quả gợi ý cho chuyến đi của bạn</p>
                 <h1 class="text-4xl font-semibold">{{ data.title }}</h1>
-                <p class="text-gray-500">
-                    {{ data.company }} • {{ data.interests }} • Đi {{ totalDays }} ngày</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span v-if="data.company" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        {{ data.company }}
+                    </span>
+                    <template v-if="data.interests">
+                        <span
+                            v-for="interest in data.interests.split(',')"
+                            :key="interest"
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
+                            {{ interest.trim() }}
+                        </span>
+                    </template>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Đi {{ totalDays }} ngày
+                    </span>
+                </div>
                 <div class="pt-2"></div>
                 <p class="">
                     {{ data.description }}
@@ -167,8 +182,16 @@ const submitReplacement = () => {
                             <div v-for="foodItem in item.food" :key="foodItem.id"
                                 class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1">
                                 <h3 class="font-bold text-lg mb-1">🍜 {{ foodItem.name }}</h3>
-                                <p class="text-gray-500 text-sm mb-4">{{ foodItem.food_type }} • {{ foodItem.address }}
-                                </p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span v-if="foodItem.food_type"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ foodItem.food_type }}
+                                    </span>
+                                    <span v-if="foodItem.address"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ foodItem.address }}
+                                    </span>
+                                </div>
                                 <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ foodItem.description }}</p>
                                 <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ foodItem }}</p> -->
                                 <div class="flex gap-2 mt-auto w-full">
@@ -200,7 +223,14 @@ const submitReplacement = () => {
                             <div v-for="sightseeingItem in item.sightseeing" :key="sightseeingItem.id"
                                 class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1">
                                 <h3 class="font-bold text-lg mb-1">🏛️ {{ sightseeingItem.name }}</h3>
-                                <p class="text-gray-500 text-sm mb-4">Thăm quan • {{ sightseeingItem.address }}</p>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        Thăm quan
+                                    </span>
+                                    <span v-if="sightseeingItem.address" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {{ sightseeingItem.address }}
+                                    </span>
+                                </div>
                                 <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem.description }}
                                 </p>
                                 <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem }}</p> -->
