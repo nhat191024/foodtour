@@ -1,10 +1,25 @@
 <script setup>
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { Link } from '@inertiajs/vue3';
-import { reactive, computed } from 'vue';
-import { Heart } from 'lucide-vue-next';
-import { router } from '@inertiajs/vue3';
+import { useForm, router, Link } from '@inertiajs/vue3';
+import { ref, reactive, computed } from 'vue';
+import { Heart, Trash2, Zap, RotateCw, Loader2 } from 'lucide-vue-next';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const isReplaceModalOpen = ref(false);
+const itemToReplace = ref(null);
+const replaceForm = useForm({
+    prompt: '',
+});
 
 const props = defineProps({
     data: Object
@@ -68,6 +83,52 @@ const toggleFavoriteFood = (foodId) => {
         }
     });
 };
+
+const openReplaceModal = (type, item) => {
+    itemToReplace.value = { id: item.id, type: type, name: item.name };
+    replaceForm.reset();
+    isReplaceModalOpen.value = true;
+};
+
+const isDeleteItemModalOpen = ref(false);
+const itemToDelete = ref(null);
+const deleteItemForm = useForm({});
+
+const openDeleteModal = (type, item) => {
+    itemToDelete.value = { id: item.id, type: type, name: item.name };
+    isDeleteItemModalOpen.value = true;
+};
+
+const submitDeleteItem = () => {
+    if (!itemToDelete.value) return;
+
+    const { type, id } = itemToDelete.value;
+    const routeName = type === 'food' ? 'history.food.destroy' : 'history.sightseeing.destroy';
+    const params = type === 'food' ? { food: id } : { sightseeing: id };
+
+    deleteItemForm.delete(route(routeName, params), {
+        preserveScroll: true,
+        onSuccess: () => {
+            isDeleteItemModalOpen.value = false;
+            itemToDelete.value = null;
+        }
+        // todo: onError
+    });
+};
+
+const submitReplacement = () => {
+    if (!itemToReplace.value) return;
+    const { type, id } = itemToReplace.value;
+
+    replaceForm.post(route('history.item.replace', { type, id }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            isReplaceModalOpen.value = false;
+            itemToReplace.value = null;
+        }
+        // todo: onError
+    });
+};
 </script>
 
 <template>
@@ -120,6 +181,16 @@ const toggleFavoriteFood = (foodId) => {
                                             :fill="foodItem.user_favorite ? 'currentColor' : 'none'" />
                                         {{ foodItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
                                     </Button>
+                                    <Button @click="openReplaceModal('food', foodItem)" variant="outline"
+                                        class="action-btn">
+                                        <RotateCw class="w-4 h-4" />
+                                    </Button>
+                                    <Button @click="openDeleteModal('food', foodItem)" variant="outline"
+                                        class="action-btn" :disabled="loadingStates[`remove-${foodItem.id}`]">
+                                        <Loader2 v-if="loadingStates[`remove-${foodItem.id}`]"
+                                            class="w-4 h-4 animate-spin" />
+                                        <Trash2 v-else class="w-4 h-4" />
+                                    </Button>
                                     <Button @click="goToGoogleMap(foodItem.name + ' ' + foodItem.address)"
                                         class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
                                         Đến ngay <p aria-hidden="true">→</p>
@@ -144,6 +215,16 @@ const toggleFavoriteFood = (foodId) => {
                                             :fill="sightseeingItem.user_favorite ? 'currentColor' : 'none'" />
                                         {{ sightseeingItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
                                     </Button>
+                                    <Button @click="openReplaceModal('sightseeing', sightseeingItem)" variant="outline"
+                                        class="action-btn">
+                                        <RotateCw class="w-4 h-4" />
+                                    </Button>
+                                    <Button @click="openDeleteModal('sightseeing', sightseeingItem)" variant="outline"
+                                        class="action-btn" :disabled="loadingStates[`remove-${sightseeingItem.id}`]">
+                                        <Loader2 v-if="loadingStates[`remove-${sightseeingItem.id}`]"
+                                            class="w-4 h-4 animate-spin" />
+                                        <Trash2 v-else class="w-4 h-4" />
+                                    </Button>
                                     <Button @click="goToGoogleMap(sightseeingItem.name + ' ' + sightseeingItem.address)"
                                         class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
                                         Đến ngay <p aria-hidden="true">→</p>
@@ -160,5 +241,70 @@ const toggleFavoriteFood = (foodId) => {
                 <p class="text-gray-500 text-sm">Powered by Google Gemini</p>
             </div>
         </div>
+
+        <Dialog :open="isReplaceModalOpen" @update:open="isReplaceModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="submitReplacement">
+                    <DialogHeader>
+                        <DialogTitle>Thay đổi địa điểm</DialogTitle>
+                        <DialogDescription>
+                            Bạn muốn thay thế "{{ itemToReplace?.name }}" bằng một địa điểm như thế nào?
+                            Hãy mô tả yêu cầu của bạn.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="my-4">
+                        <Label for="prompt" class="sr-only">Yêu cầu mới</Label>
+                        <Input id="prompt" v-model="replaceForm.prompt"
+                            placeholder="Ví dụ: một quán bún chả khác gần đây" autocomplete="off" />
+                        <p v-if="replaceForm.errors.prompt" class="text-sm text-red-500 mt-1">{{
+                            replaceForm.errors.prompt }}</p>
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" @click="isReplaceModalOpen = false">Hủy</Button>
+                        <Button type="submit" :disabled="replaceForm.processing">
+                            <Loader2 v-if="replaceForm.processing" class="w-4 h-4 mr-2 animate-spin" />
+                            Xác nhận thay đổi
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+        <Dialog :open="isDeleteItemModalOpen" @update:open="isDeleteItemModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="submitDeleteItem">
+                    <DialogHeader>
+                        <DialogTitle>Xóa địa điểm</DialogTitle>
+                        <DialogDescription>
+                            Bạn có chắc chắn muốn xóa "{{ itemToDelete?.name }}" khỏi lịch trình không?
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" @click="isDeleteItemModalOpen = false">Hủy</Button>
+                        <Button type="submit" :disabled="deleteItemForm.processing">
+                            <Loader2 v-if="deleteItemForm.processing" class="w-4 h-4 mr-2 animate-spin" />
+                            Xác nhận xóa
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </ClientLayout>
 </template>
+
+<style scoped>
+/* .card-container {
+    @apply flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[300px] md:w-auto md:flex-1;
+}
+.card-actions {
+    @apply flex gap-2 mt-auto w-full pt-4 border-t;
+}
+.action-btn {
+    @apply p-2 h-auto;
+}
+.main-action-btn {
+    @apply cursor-pointer bg-black text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors;
+} */
+</style>
