@@ -174,43 +174,45 @@ initializeAnswer();
 
 <template>
     <ClientLayout>
-        <!-- loading overlay -->
-        <div v-if="isLoading" class="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
-            <div class="text-center">
-                <Loader2 class="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
-                <p class="text-lg font-medium text-gray-700">Đang sắp xếp lịch trình cho bạn...</p>
-                <p class="text-sm text-gray-500 mt-2">Vui lòng đợi trong giây lát. Bạn có thể rời màn hình này và quay lại vào lúc sau. Kết quả sẽ được lưu ở trong phần lịch sử chuyến đi.</p>
-                <a :href="route('history.index')" target="_blank" class="inline-block">
-                    <Button size="sm" class="mt-3">
-                        Lịch sử lịch trình
-                    </Button>
-                </a>
+        <div class="rounded-lg border shadow-lg bg-white p-6 max-w-2xl mx-auto my-8">
+            <!-- loading overlay -->
+            <div v-if="isLoading" class="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
+                <div class="text-center">
+                    <Loader2 class="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
+                    <p class="text-lg font-medium text-gray-700">Đang sắp xếp lịch trình cho bạn...</p>
+                    <p class="text-sm text-gray-500 mt-2">Vui lòng đợi trong giây lát. Bạn có thể rời màn hình này và
+                        quay lại vào lúc sau. Kết quả sẽ được lưu ở trong phần lịch sử chuyến đi.</p>
+                    <a :href="route('history.index')" target="_blank" class="inline-block">
+                        <Button size="sm" class="mt-3">
+                            Lịch sử lịch trình
+                        </Button>
+                    </a>
+                </div>
             </div>
-        </div>
 
-        <div class="h-fit flex flex-col p-4 mb-3">
-            <div class="flex items-center justify-between mb-4 md:mb-6">
-                <!-- <button @click="prevStep" :disabled="currentStep === 0" class="p-4 disabled:opacity-50">
+            <div class="h-fit flex flex-col p-4 mb-3">
+                <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <!-- <button @click="prevStep" :disabled="currentStep === 0" class="p-4 disabled:opacity-50">
                     <h6>BACK</h6>
                 </button> -->
-            </div>
+                </div>
 
-            <div class="flex-1 text-center mb-2">
-                <div class="text-sm md:text-base mb-2">
-                    ({{ currentStep + 1 }}/{{ questions.length }})
-                </div>
-                <div v-if="Object.keys(form.errors).length > 0" class="text-red-500 font-bold text-sm md:text-base">
-                    Vui lòng kiểm tra những lỗi sau và sửa lại theo yêu cầu:
-                </div>
-                <div v-if="form.errors" class="text-red-500 font-bold text-sm">
-                    <div v-for="(error, key) in form.errors" :key="key">
-                        {{ error }}
+                <div class="flex-1 text-center mb-2">
+                    <div class="text-sm md:text-base mb-2">
+                        ({{ currentStep + 1 }}/{{ questions.length }})
+                    </div>
+                    <div v-if="Object.keys(form.errors).length > 0" class="text-red-500 font-bold text-sm md:text-base">
+                        Vui lòng kiểm tra những lỗi sau và sửa lại theo yêu cầu:
+                    </div>
+                    <div v-if="form.errors" class="text-red-500 font-bold text-sm">
+                        <div v-for="(error, key) in form.errors" :key="key">
+                            {{ error }}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="w-16">
-                <!-- <button @click="nextStep"
+                <div class="w-16">
+                    <!-- <button @click="nextStep"
                         v-if="currentStep < questions.length - 1"
                         :disabled="!isCurrentAnswerValid"
                         class="p-4"
@@ -224,90 +226,87 @@ initializeAnswer();
                         :class="{'opacity-50 cursor-not-allowed': !isCurrentAnswerValid}">
                     <h6>SUBMIT</h6>
                 </button> -->
-            </div>
+                </div>
 
-            <div class="flex-1 flex flex-col items-center justify-start md:justify-center">
-                <div class="w-full max-w-2xl px-4">
-                    <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">{{ currentQuestion.text }}</h2>
+                <div class="flex-1 flex flex-col items-center justify-start md:justify-center">
+                    <div class="w-full max-w-2xl px-4">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center">{{ currentQuestion.text }}
+                        </h2>
 
-                    <div class="space-y-4" :key="currentQuestion.id">
-                        <input v-if="currentQuestion.type === 'text'" type="text"
-                            v-model="form.answers[currentQuestion.id]" :placeholder="currentQuestion.placeholder"
-                            class="p-4 border rounded-lg w-full" />
-                        <div v-if="currentQuestion.type === 'text'" class="flex flex-wrap gap-2 justify-center mt-3">
-                            <span class="px-4 py-2 rounded-full transition-colors duration-200">Gợi ý: </span>
-                            <span v-for="option in currentQuestion.options" :key="option.value"
-                                class="px-4 py-2 rounded-full border cursor-pointer transition-colors duration-200"
-                                :class="form.answers[currentQuestion.id] === option.label ? 'bg-blue-500 text-white border-blue-500' : 'hover:bg-gray-100 border-gray-300'"
-                                @click="form.answers[currentQuestion.id] = option.label">{{ option.label }}</span>
-                        </div>
+                        <div class="space-y-4" :key="currentQuestion.id">
+                            <input v-if="currentQuestion.type === 'text'" type="text"
+                                v-model="form.answers[currentQuestion.id]" :placeholder="currentQuestion.placeholder"
+                                class="p-4 border rounded-lg w-full" />
+                            <div v-if="currentQuestion.type === 'text'"
+                                class="flex flex-wrap gap-2 justify-center mt-3">
+                                <span class="px-4 py-2 rounded-full transition-colors duration-200">Gợi ý: </span>
+                                <span v-for="option in currentQuestion.options" :key="option.value"
+                                    class="px-4 py-2 rounded-full border cursor-pointer transition-colors duration-200"
+                                    :class="form.answers[currentQuestion.id] === option.label ? 'bg-blue-500 text-white border-blue-500' : 'hover:bg-gray-100 border-gray-300'"
+                                    @click="form.answers[currentQuestion.id] = option.label">{{ option.label }}</span>
+                            </div>
 
-                        <input v-if="currentQuestion.type === 'number'" type="number"
-                            v-model="form.answers[currentQuestion.id]" :placeholder="currentQuestion.placeholder"
-                            class="p-4 border rounded-lg w-full" />
-                        <div v-if="currentQuestion.type === 'number'" class="flex flex-wrap gap-2 justify-center mt-3">
-                            <span class="px-4 py-2 rounded-full transition-colors duration-200">Gợi ý: </span>
-                            <span v-for="option in currentQuestion.options" :key="option.value"
-                                class="px-4 py-2 rounded-full border cursor-pointer transition-colors duration-200"
-                                :class="form.answers[currentQuestion.id] === option.label ? 'bg-blue-500 text-white border-blue-500' : 'hover:bg-gray-100 border-gray-300'"
-                                @click="form.answers[currentQuestion.id] = option.value">{{ option.label }}</span>
-                        </div>
+                            <input v-if="currentQuestion.type === 'number'" type="number"
+                                v-model="form.answers[currentQuestion.id]" :placeholder="currentQuestion.placeholder"
+                                class="p-4 border rounded-lg w-full" />
+                            <div v-if="currentQuestion.type === 'number'"
+                                class="flex flex-wrap gap-2 justify-center mt-3">
+                                <span class="px-4 py-2 rounded-full transition-colors duration-200">Gợi ý: </span>
+                                <span v-for="option in currentQuestion.options" :key="option.value"
+                                    class="px-4 py-2 rounded-full border cursor-pointer transition-colors duration-200"
+                                    :class="form.answers[currentQuestion.id] === option.label ? 'bg-blue-500 text-white border-blue-500' : 'hover:bg-gray-100 border-gray-300'"
+                                    @click="form.answers[currentQuestion.id] = option.value">{{ option.label }}</span>
+                            </div>
 
-                        <div v-if="currentQuestion.type === 'radio'" class="space-y-4">
-                            <label v-for="option in currentQuestion.options" :key="option.value"
-                                class="flex items-center p-4 border rounded-lg cursor-pointer"
-                                :class="{ 'bg-blue-100 border-blue-500': form.answers[currentQuestion.id] === option.value }">
-                                <input type="radio" :name="currentQuestion.id" :value="option.value"
-                                    v-model="form.answers[currentQuestion.id]" class="hidden" />
-                                <span>{{ option.label }}</span>
-                                <input v-if="option.value === 'user_defined'" type="text"
-                                    :value="form.answers[currentQuestion.id + '_custom_text']"
-                                    @input="event => form.answers[currentQuestion.id + '_custom_text'] = event.target.value"
-                                    @focus="handleClickOnOption(currentQuestion.id)"
-                                    :placeholder="option.placeholder"
-                                    class="ml-0 sm:ml-4 p-2 border rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            <div v-if="currentQuestion.type === 'radio'" class="space-y-4">
+                                <label v-for="option in currentQuestion.options" :key="option.value"
+                                    class="flex items-center p-4 border rounded-lg cursor-pointer"
+                                    :class="{ 'bg-blue-100 border-blue-500': form.answers[currentQuestion.id] === option.value }">
+                                    <input type="radio" :name="currentQuestion.id" :value="option.value"
+                                        v-model="form.answers[currentQuestion.id]" class="hidden" />
+                                    <span>{{ option.label }}</span>
+                                    <input v-if="option.value === 'user_defined'" type="text"
+                                        :value="form.answers[currentQuestion.id + '_custom_text']"
+                                        @input="event => form.answers[currentQuestion.id + '_custom_text'] = event.target.value"
+                                        @focus="handleClickOnOption(currentQuestion.id)"
+                                        :placeholder="option.placeholder"
+                                        class="ml-0 sm:ml-4 p-2 border rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                </label>
+                            </div>
 
-                                    />
-                            </label>
-                        </div>
+                            <div v-if="currentQuestion.type === 'checkbox'" class="space-y-4">
+                                <label v-for="option in currentQuestion.options" :key="option.value"
+                                    class="flex items-center p-4 border rounded-lg cursor-pointer"
+                                    :class="{ 'bg-blue-100 border-blue-500': form.answers[currentQuestion.id].includes(option.value) }">
+                                    <input type="checkbox" :value="option.value"
+                                        v-model="form.answers[currentQuestion.id]" class="mr-4"
+                                        @change="handleSelectionChange(option, $event)" />
+                                    <span>{{ option.label }}</span>
+                                    <input v-if="option.value === 'user_defined'" type="text"
+                                        :value="form.answers[currentQuestion.id + '_custom_text']"
+                                        @input="event => form.answers[currentQuestion.id + '_custom_text'] = event.target.value"
+                                        @focus="handleClickOnOption(currentQuestion.id)"
+                                        :placeholder="option.placeholder"
+                                        class="ml-0 sm:ml-4 p-2 border rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                </label>
+                            </div>
 
-                        <div v-if="currentQuestion.type === 'checkbox'" class="space-y-4">
-                            <label v-for="option in currentQuestion.options" :key="option.value"
-                                class="flex items-center p-4 border rounded-lg cursor-pointer"
-                                :class="{ 'bg-blue-100 border-blue-500': form.answers[currentQuestion.id].includes(option.value) }">
-                                <input type="checkbox" :value="option.value" v-model="form.answers[currentQuestion.id]"
-                                    class="mr-4" @change="handleSelectionChange(option, $event)" />
-                                <span>{{ option.label }}</span>
-                                <input v-if="option.value === 'user_defined'" type="text"
-                                    :value="form.answers[currentQuestion.id + '_custom_text']"
-                                    @input="event => form.answers[currentQuestion.id + '_custom_text'] = event.target.value"
-                                    @focus="handleClickOnOption(currentQuestion.id)"
-                                    :placeholder="option.placeholder"
-                                    class="ml-0 sm:ml-4 p-2 border rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            <div class="flex justify-center w-full">
+                                <Button :class="'mt-6 mr-3 disabled:opacity-50 cursor-pointer'" @click="prevStep"
+                                    :disabled="currentStep === 0">
+                                    Quay lại
+                                </Button>
 
-                                    />
-                            </label>
-                        </div>
+                                <Button :class="'mt-6 cursor-pointer'" v-if="currentStep === questions.length - 1"
+                                    @click="submitSurvey" :disabled="!isCurrentAnswerValid">
+                                    Hoàn thành
+                                </Button>
 
-                        <div class="flex justify-center w-full">
-                            <Button :class="'mt-6 mr-3 disabled:opacity-50 cursor-pointer'"
-                                    @click="prevStep" :disabled="currentStep === 0">
-                                Quay lại
-                            </Button>
-
-                            <Button :class="'mt-6 cursor-pointer'"
-                                    v-if="currentStep === questions.length - 1"
-                                    @click="submitSurvey"
-                                    :disabled="!isCurrentAnswerValid">
-                                Hoàn thành
-                            </Button>
-
-                            <Button :class="'mt-6 cursor-pointer'"
-                                    v-if="currentStep !== questions.length - 1"
-                                    @click="nextStep"
-                                    :disabled="!isCurrentAnswerValid">
-                                Tiếp theo
-                            </Button>
+                                <Button :class="'mt-6 cursor-pointer'" v-if="currentStep !== questions.length - 1"
+                                    @click="nextStep" :disabled="!isCurrentAnswerValid">
+                                    Tiếp theo
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
