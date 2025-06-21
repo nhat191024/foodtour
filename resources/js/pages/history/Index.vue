@@ -9,8 +9,6 @@ const props = defineProps({
     data: Object
 });
 
-console.log(props.data);
-
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
@@ -31,6 +29,11 @@ const getTripDuration = (startDate, endDate) => {
 const formatCost = (cost) => {
     return cost === "0" ? "Miễn phí" : `${parseInt(cost).toLocaleString('vi-VN')} VNĐ`;
 };
+
+const calculateTotalCost = (item) => {
+    if (!item.trip_costs || !Array.isArray(item.trip_costs)) return 0;
+    return item.trip_costs.reduce((total, cost) => total + (parseInt(cost.value) || 0), 0);
+}
 
 const historyItems = computed(() => props.data);
 </script>
@@ -63,7 +66,7 @@ const historyItems = computed(() => props.data);
                         </div>
                         <div class="w-full sm:w-auto sm:ml-4 text-left">
                             <div class="text-lg font-bold text-green-600">
-                                {{ formatCost(item.cost) }}
+                                {{ formatCost(calculateTotalCost(item)) }}
                             </div>
                         </div>
                     </div>
