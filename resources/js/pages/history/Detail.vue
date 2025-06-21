@@ -138,19 +138,18 @@ const submitReplacement = () => {
                 <p class="font-semibold">Kết quả gợi ý cho chuyến đi của bạn</p>
                 <h1 class="text-4xl font-semibold">{{ data.title }}</h1>
                 <div class="flex flex-wrap items-center gap-2">
-                    <span v-if="data.company" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <span v-if="data.company"
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                         {{ data.company }}
                     </span>
                     <template v-if="data.interests">
-                        <span
-                            v-for="interest in data.interests.split(',')"
-                            :key="interest"
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
+                        <span v-for="interest in data.interests.split(',')" :key="interest"
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {{ interest.trim() }}
                         </span>
                     </template>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span
+                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         Đi {{ totalDays }} ngày
                     </span>
                 </div>
@@ -194,71 +193,85 @@ const submitReplacement = () => {
                                 </div>
                                 <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ foodItem.description }}</p>
                                 <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ foodItem }}</p> -->
-                                <div class="flex gap-2 mt-auto w-full">
-                                    <Button @click="toggleFavoriteFood(foodItem.id)" variant="outline"
-                                        class="flex items-center gap-2" :disabled="loadingStates[foodItem.id]" :class="{
-                                            'text-white border-pink-300 bg-pink-400': foodItem.user_favorite,
-                                            'text-gray-600': !foodItem.user_favorite
-                                        }">
-                                        <Heart class="w-4 h-4"
-                                            :fill="foodItem.user_favorite ? 'currentColor' : 'none'" />
-                                        {{ foodItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
-                                    </Button>
-                                    <Button @click="openReplaceModal('food', foodItem)" variant="outline"
-                                        class="action-btn">
-                                        <RotateCw class="w-4 h-4" />
-                                    </Button>
-                                    <Button @click="openDeleteModal('food', foodItem)" variant="outline"
-                                        class="action-btn" :disabled="loadingStates[`remove-${foodItem.id}`]">
-                                        <Loader2 v-if="loadingStates[`remove-${foodItem.id}`]"
-                                            class="w-4 h-4 animate-spin" />
-                                        <Trash2 v-else class="w-4 h-4" />
-                                    </Button>
-                                    <Button @click="goToGoogleMap(foodItem.name + ' ' + foodItem.address)"
-                                        class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
-                                        Đến ngay <p aria-hidden="true">→</p>
-                                    </Button>
+                                <div class="flex flex-wrap gap-2 mt-auto w-full">
+                                    <div class="flex gap-2 flex-1 min-w-[180px]">
+                                        <Button @click="toggleFavoriteFood(foodItem.id)" variant="outline"
+                                            class="flex items-center gap-2 flex-1"
+                                            :disabled="loadingStates[foodItem.id]" :class="{
+                                                'text-white border-pink-300 bg-pink-400': foodItem.user_favorite,
+                                                'text-gray-600': !foodItem.user_favorite
+                                            }">
+                                            <Heart class="w-4 h-4"
+                                                :fill="foodItem.user_favorite ? 'currentColor' : 'none'" />
+                                            {{ foodItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
+                                        </Button>
+                                        <Button @click="openReplaceModal('food', foodItem)" variant="outline"
+                                            class="action-btn flex-shrink-0">
+                                            <RotateCw class="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                    <div class="flex gap-2 flex-1 min-w-[180px]">
+                                        <Button @click="openDeleteModal('food', foodItem)" variant="outline"
+                                            class="action-btn flex-shrink-0"
+                                            :disabled="loadingStates[`remove-${foodItem.id}`]">
+                                            <Loader2 v-if="loadingStates[`remove-${foodItem.id}`]"
+                                                class="w-4 h-4 animate-spin" />
+                                            <Trash2 v-else class="w-4 h-4" />
+                                        </Button>
+                                        <Button @click="goToGoogleMap(foodItem.name + ' ' + foodItem.address)"
+                                            class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
+                                            Đến ngay <p aria-hidden="true">→</p>
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                             <div v-for="sightseeingItem in item.sightseeing" :key="sightseeingItem.id"
                                 class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1">
                                 <h3 class="font-bold text-lg mb-1">🏛️ {{ sightseeingItem.name }}</h3>
                                 <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                         Thăm quan
                                     </span>
-                                    <span v-if="sightseeingItem.address" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span v-if="sightseeingItem.address"
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         {{ sightseeingItem.address }}
                                     </span>
                                 </div>
                                 <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem.description }}
                                 </p>
                                 <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem }}</p> -->
-                                <div class="flex gap-2 mt-auto w-full">
-                                    <Button @click="toggleFavoriteSightseeing(sightseeingItem.id)" variant="outline"
-                                        class="flex items-center gap-2" :disabled="loadingStates[sightseeingItem.id]"
-                                        :class="{
-                                            'text-white border-pink-300 bg-pink-400': sightseeingItem.user_favorite,
-                                            'text-gray-600': !sightseeingItem.user_favorite
-                                        }">
-                                        <Heart class="w-4 h-4"
-                                            :fill="sightseeingItem.user_favorite ? 'currentColor' : 'none'" />
-                                        {{ sightseeingItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
-                                    </Button>
-                                    <Button @click="openReplaceModal('sightseeing', sightseeingItem)" variant="outline"
-                                        class="action-btn">
-                                        <RotateCw class="w-4 h-4" />
-                                    </Button>
-                                    <Button @click="openDeleteModal('sightseeing', sightseeingItem)" variant="outline"
-                                        class="action-btn" :disabled="loadingStates[`remove-${sightseeingItem.id}`]">
-                                        <Loader2 v-if="loadingStates[`remove-${sightseeingItem.id}`]"
-                                            class="w-4 h-4 animate-spin" />
-                                        <Trash2 v-else class="w-4 h-4" />
-                                    </Button>
-                                    <Button @click="goToGoogleMap(sightseeingItem.name + ' ' + sightseeingItem.address)"
-                                        class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
-                                        Đến ngay <p aria-hidden="true">→</p>
-                                    </Button>
+                                <div class="flex flex-wrap gap-2 mt-auto w-full">
+                                    <div class="flex gap-2 flex-1 min-w-[180px]">
+                                        <Button @click="toggleFavoriteSightseeing(sightseeingItem.id)" variant="outline"
+                                            class="flex items-center gap-2 flex-1"
+                                            :disabled="loadingStates[sightseeingItem.id]" :class="{
+                                                'text-white border-pink-300 bg-pink-400': sightseeingItem.user_favorite,
+                                                'text-gray-600': !sightseeingItem.user_favorite
+                                            }">
+                                            <Heart class="w-4 h-4"
+                                                :fill="sightseeingItem.user_favorite ? 'currentColor' : 'none'" />
+                                            {{ sightseeingItem.user_favorite ? 'Đã yêu thích' : 'Yêu thích' }}
+                                        </Button>
+                                        <Button @click="openReplaceModal('sightseeing', sightseeingItem)"
+                                            variant="outline" class="action-btn flex-shrink-0">
+                                            <RotateCw class="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                    <div class="flex gap-2 flex-1 min-w-[180px]">
+                                        <Button @click="openDeleteModal('sightseeing', sightseeingItem)"
+                                            variant="outline" class="action-btn flex-shrink-0"
+                                            :disabled="loadingStates[`remove-${sightseeingItem.id}`]">
+                                            <Loader2 v-if="loadingStates[`remove-${sightseeingItem.id}`]"
+                                                class="w-4 h-4 animate-spin" />
+                                            <Trash2 v-else class="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            @click="goToGoogleMap(sightseeingItem.name + ' ' + sightseeingItem.address)"
+                                            class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
+                                            Đến ngay <p aria-hidden="true">→</p>
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -310,6 +323,10 @@ const submitReplacement = () => {
                             Bạn có chắc chắn muốn xóa "{{ itemToDelete?.name }}" khỏi lịch trình không?
                         </DialogDescription>
                     </DialogHeader>
+
+                    <div class="my-4">
+                        <Label for="prompt" class="sr-only"></Label>
+                    </div>
 
                     <DialogFooter>
                         <Button type="button" variant="secondary" @click="isDeleteItemModalOpen = false">Hủy</Button>
