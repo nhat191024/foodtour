@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
+import { Edit, Trash2, Loader2 } from 'lucide-vue-next';
 import {
     Dialog,
     DialogContent,
@@ -23,7 +24,14 @@ const props = defineProps({
 const isAddCostModalOpen = ref(false);
 const numberOfMembers = ref(1);
 const deletingCostId = ref(null);
+const costToEdit = ref(null);
+
 const form = useForm({
+    name: '',
+    value: null,
+});
+
+const editForm = useForm({
     name: '',
     value: null,
 });
@@ -82,8 +90,30 @@ const confirmDeletion = () => {
     });
 };
 
+const openEditModal = (cost) => {
+    costToEdit.value = cost;
+    editForm.name = cost.name;
+    editForm.value = cost.value;
+    editForm.clearErrors();
+    isEditCostModalOpen.value = true;
+};
+
+const closeEditModal = () => {
+    isEditCostModalOpen.value = false;
+    costToEdit.value = null;
+};
+
+const submitEditCost = () => {
+    if (!costToEdit.value) return;
+    editForm.put(route('calculator.update_cost', { cost: costToEdit.value.id }), {
+        preserveScroll: true,
+        onSuccess: () => closeEditModal(),
+    });
+};
+
 const isConfirmDeleteModalOpen = ref(false);
 const costIdToDelete = ref(null);
+const isEditCostModalOpen = ref(false);
 </script>
 
 <template>
@@ -109,13 +139,12 @@ const costIdToDelete = ref(null);
                             <div class="flex items-center gap-4">
                                 <span class="font-medium text-gray-900">{{ Number(cost.value).toLocaleString() }}
                                     VND</span>
+                                <button @click="openEditModal(cost)" class="text-gray-400 hover:text-blue-500">
+                                    <Edit class="h-4 w-4" />
+                                </button>
                                 <button @click="openDeleteConfirmDialog(cost.id)"
                                     class="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
+                                    <Trash2 class="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
@@ -196,6 +225,35 @@ const costIdToDelete = ref(null);
                         <span v-else>Xác nhận xóa</span>
                     </Button>
                 </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        <Dialog :open="isEditCostModalOpen" @update:open="isEditCostModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="submitEditCost" class="space-y-4">
+                    <DialogHeader>
+                        <DialogTitle>Chỉnh sửa chi phí</DialogTitle>
+                        <DialogDescription>
+                            Cập nhật lại tên và giá trị cho chi phí này.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div>
+                        <label for="edit-cost-name" class="block text-sm font-medium text-gray-700">Tên chi phí</label>
+                        <input id="edit-cost-name" type="text" v-model="editForm.name" class="mt-1 w-full p-2 border rounded-md" required />
+                        <div v-if="editForm.errors.name" class="text-red-500 text-sm mt-1">{{ editForm.errors.name }}</div>
+                    </div>
+                    <div>
+                        <label for="edit-cost-value" class="block text-sm font-medium text-gray-700">Số tiền (VND)</label>
+                        <input id="edit-cost-value" type="number" v-model="editForm.value" class="mt-1 w-full p-2 border rounded-md" required />
+                        <div v-if="editForm.errors.value" class="text-red-500 text-sm mt-1">{{ editForm.errors.value }}</div>
+                    </div>
+                    <DialogFooter class="gap-2 pt-4">
+                        <Button type="button" variant="secondary" @click="closeEditModal">Hủy</Button>
+                        <Button type="submit" :disabled="editForm.processing">
+                            <Loader2 v-if="editForm.processing" class="w-4 h-4 mr-2 animate-spin" />
+                            Lưu thay đổi
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     </ClientLayout>
