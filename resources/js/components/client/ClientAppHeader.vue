@@ -17,10 +17,10 @@ const closeMenu = () => {
 }
 
 const navItems = [
-    { name: 'Home', route: 'home' },
-    { name: 'Start Now', route: 'survey.start' },
-    { name: 'Weathercast', route: 'weathercast' },
-    { name: 'Calculator', route: 'calculator' },
+    { name: 'Trang chủ', route: 'home' },
+    { name: 'Bắt đầu', route: 'survey.start' },
+    { name: 'Dự báo thời tiết', route: 'weathercast' },
+    { name: 'Máy tính', route: 'calculator' },
 ]
 </script>
 
@@ -48,7 +48,7 @@ const navItems = [
                 </div>
                 <Link v-else :href="route('login')"
                     class="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                    Login
+                    Đăng nhập
                 </Link>
             </nav>
 
@@ -60,7 +60,7 @@ const navItems = [
                 :aria-expanded="isMenuOpen">
                 <Menu v-if="!isMenuOpen" class="h-6 w-6" />
                 <X v-else class="h-6 w-6" />
-                <span class="sr-only">Toggle navigation menu</span>
+                <span class="sr-only">Mở thanh điều hướng</span>
             </button>
         </div>
 
@@ -98,7 +98,7 @@ const navItems = [
                                 class="w-10 h-10 rounded-full" />
                             <div class="flex flex-col">
                                 <span class="text-base font-medium text-gray-900">{{ user.name }}</span>
-                                <span class="text-sm text-gray-500">View Profile</span>
+                                <span class="text-sm text-gray-500">Xem hồ sơ</span>
                             </div>
                         </Link>
                     </div>
@@ -109,7 +109,7 @@ const navItems = [
                             :href="route('login')"
                             class="flex w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-base font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             @click="closeMenu">
-                            Login
+                            Đăng nhập
                         </Link>
                     </div>
                 </nav>
@@ -119,7 +119,6 @@ const navItems = [
 </template>
 
 <style scoped>
-/* Ensure smooth transitions and proper overflow handling */
 .transition-all {
     transition-property: all;
 }
