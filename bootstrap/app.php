@@ -12,8 +12,8 @@ use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
@@ -28,17 +28,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
 
         $exceptions->render(function (Throwable $e, $request) {
-            if (! $request->is('api/*') && ! app()->runningInConsole()) {
-                $status = $e instanceof HttpException ? $e->getStatusCode() : 500;
+            if (!config('app.debug') && $e instanceof HttpException) {
+                if (! $request->is('api/*') && ! app()->runningInConsole()) {
+                    $status = $e->getStatusCode();
 
-                if (in_array($status, [401, 403, 404, 500, 503])) {
-                    return Inertia::render('error/Show', [
-                        'status' => $status,
-                    ])->toResponse($request)->setStatusCode($status);
+                    if (in_array($status, [401, 403, 404, 500, 503])) {
+                        return Inertia::render('Error/Show', [
+                            'status' => $status,
+                        ])->toResponse($request)->setStatusCode($status);
+                    }
                 }
             }
-
-            return null;
         });
 
         $exceptions->renderable(function (TooManyRequestsHttpException $e, $request) {
@@ -48,5 +48,4 @@ return Application::configure(basePath: dirname(__DIR__))
                 return back()->with('error', $message);
             }
         });
-
     })->create();
