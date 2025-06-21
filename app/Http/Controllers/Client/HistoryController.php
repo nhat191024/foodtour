@@ -8,8 +8,10 @@ use App\Models\HistoryFood;
 use App\Models\HistorySightseeing;
 use App\Models\UserFavoriteFood;
 use App\Models\UserFavoriteSightseeing;
+use App\Service\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class HistoryController extends Controller
@@ -83,5 +85,69 @@ class HistoryController extends Controller
         }
 
         return back();
+    }
+
+    public function destroyFood(HistoryFood $food)
+    {
+        if ($food->historyItem->history->user_id !== auth()->id()) {
+            abort(403);
+        }
+        $food->delete();
+        return back()->with('success', 'Đã xóa địa điểm.');
+    }
+
+    public function destroySightseeing(HistorySightseeing $sightseeing)
+    {
+        if ($sightseeing->historyItem->history->user_id !== auth()->id()) {
+            abort(403);
+        }
+        $sightseeing->delete();
+        return back()->with('success', 'Đã xóa địa điểm.');
+    }
+
+    public function replaceItem(Request $request, string $type, int $id, AIService $aiService)
+    {
+        $request->validate(['prompt' => 'required|string|max:255']);
+        $userPrompt = $request->input('prompt');
+
+        if ($type === 'food') {
+            $oldItem = HistoryFood::findOrFail($id);
+        } elseif ($type === 'sightseeing') {
+            $oldItem = HistorySightseeing::findOrFail($id);
+        } else {
+            return back()->with('error', 'Loại địa điểm không hợp lệ.');
+        }
+
+        if ($oldItem->historyItem->history->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $history = $oldItem->historyItem->history;
+        $context = (object)[
+            'location' => $history->title,
+            'interests' => $history->interests,
+            'company' => $history->company,
+            'dayTime' => $oldItem->historyItem->day_time,
+            'foodType' => $type === 'food' ? $oldItem->food_type : null,
+        ];
+        $historyItemId = $oldItem->history_item_id;
+        $newItemData = $aiService->getReplacementItem($type, $userPrompt, $context, $oldItem);
+
+        if (!$newItemData) {
+            return back()->with('error', 'Không thể tìm thấy địa điểm thay thế. Vui lòng thử lại với yêu cầu khác.');
+        }
+
+        DB::transaction(function () use ($oldItem, $newItemData, $type, $historyItemId) {
+            $oldItem->delete();
+            $newItemData['history_item_id'] = $historyItemId;
+            if ($type === 'food') {
+                HistoryFood::create($newItemData);
+            } else {
+                unset($newItemData['food_type']);
+                HistorySightseeing::create($newItemData);
+            }
+        });
+
+        return back()->with('success', 'Đã cập nhật địa điểm thành công!');
     }
 }
