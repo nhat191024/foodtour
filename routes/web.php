@@ -55,6 +55,9 @@ Route::post('/calculator/tour/{history}/add-cost', [ToolboxController::class, 's
     ->name('calculator.store_cost')
     ->middleware('auth');
 
+Route::put('/trip-costs/{cost}', [ToolboxController::class, 'updateTripCost'])
+    ->name('calculator.update_cost')
+    ->middleware('auth');
 Route::delete('/trip-costs/{cost}', [ToolboxController::class, 'destroyTripCost'])
     ->name('calculator.destroy_cost')
     ->middleware('auth');
