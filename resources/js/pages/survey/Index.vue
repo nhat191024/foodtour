@@ -4,6 +4,9 @@ import Button from '@/components/ui/button/Button.vue';
 import { ref, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2 } from 'lucide-vue-next';
+import DatePicker from 'vue-datepicker-next';
+import 'vue-datepicker-next/index.css';
+import 'vue-datepicker-next/locale/vi.es.js';
 
 const props = defineProps({
     questions: Array,
@@ -18,35 +21,37 @@ const form = useForm({
 const isLoading = ref(false);
 
 const isCurrentAnswerValid = computed(() => {
-    const currentAnswer = form.answers[currentQuestion.value.id];
+    const questionId = currentQuestion.value.id;
+    const questionType = currentQuestion.value.type;
+    const currentAnswer = form.answers[questionId];
+    if (currentAnswer === null || currentAnswer === undefined) return false;
 
-    if (!currentAnswer) return false;
-
-    switch (currentQuestion.value.type) {
+    switch (questionType) {
         case 'text':
             return currentAnswer.length >= 3;
         case 'checkbox':
             if (currentAnswer.length === 0) return false;
             if (currentAnswer.includes('user_defined')) {
-                const customTextKey = currentQuestion.value.id + '_custom_text';
-                const customText = form.answers[customTextKey];
-                if (!customText || customText.trim() === '') {
-                    return false;
-                }
+                const customText = form.answers[questionId + '_custom_text'];
+                return !!customText && customText.trim() !== '';
             }
             return true;
         case 'radio':
-            if (currentAnswer === null || currentAnswer === '') return false;
+            if (currentAnswer === '') return false;
             if (currentAnswer === 'user_defined') {
-                const customTextKey = currentQuestion.value.id + '_custom_text';
-                const customText = form.answers[customTextKey];
-                if (!customText || customText.trim() === '') {
-                    return false;
-                }
+                const customText = form.answers[questionId + '_custom_text'];
+                return !!customText && customText.trim() !== '';
             }
             return true;
         case 'number':
+            return currentAnswer !== '';
+        case 'date':
             return currentAnswer !== null && currentAnswer !== '';
+        case 'date-range':
+            if (!Array.isArray(currentAnswer)) return false;
+            if (currentAnswer.length !== 2) return false;
+            return currentAnswer[0] !== null && currentAnswer[1] !== null;
+
         default:
             return false;
     }
@@ -171,6 +176,23 @@ const selectExclusiveOption = (questionId, exclusiveValue) => {
 
 initializeAnswer();
 const hasErrors = computed(() => Object.keys(form.errors).length > 0);
+
+function getToday() {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+}
+
+function getMaxDate() {
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    return maxDate.toISOString().split('T')[0];
+}
+
+function getMaxEndDate(startDate) {
+    const start = new Date(startDate);
+    start.setFullYear(start.getFullYear() + 1);
+    return start.toISOString().split('T')[0];
+}
 </script>
 
 <template>
@@ -305,6 +327,41 @@ const hasErrors = computed(() => Object.keys(form.errors).length > 0);
                                         :placeholder="option.placeholder"
                                         class="ml-0 sm:ml-4 p-2 border rounded-md flex-grow focus:outline-none focus:ring-2 focus:ring-blue-500" />
                                 </label>
+                            </div>
+
+                            <div v-if="currentQuestion.type === 'date'" class="space-y-4">
+                                <label class="flex flex-col items-start w-full">
+                                    <input type="date" v-model="form.answers[currentQuestion.id]"
+                                        :max="currentQuestion.id === 'end_date' && form.answers['start_date'] ? getMaxEndDate(form.answers['start_date']) : getMaxDate()"
+                                        :min="currentQuestion.id === 'end_date' && form.answers['start_date'] ? form.answers['start_date'] : getToday()"
+                                        class="p-4 border rounded-lg w-full" />
+                                    <span class="text-sm text-gray-500 mt-2" v-if="currentQuestion.placeholder">
+                                        {{ currentQuestion.placeholder }}
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div v-if="currentQuestion.type === 'date-range'" class="space-y-4">
+                                <div class="flex justify-center">
+                                    <DatePicker v-model:value="form.answers[currentQuestion.id]" type="date" range
+                                        :placeholder="currentQuestion.placeholder" lang="vi" format="DD/MM/YYYY"
+                                        :editable="false"
+                                        :disabled-date="(date) => date < new Date(new Date().setHours(0, 0, 0, 0))"
+                                        @change="(val) => {
+                                            if (Array.isArray(val) && val.length === 2 && val[0] && val[1] && currentQuestion.max) {
+                                                const diff = (new Date(val[1]) - new Date(val[0])) / (1000 * 60 * 60 * 24) + 1;
+                                                if (diff > currentQuestion.max) {
+                                                    const start = new Date(val[0]);
+                                                    const end = new Date(start);
+                                                    end.setDate(start.getDate() + currentQuestion.max - 1);
+                                                    form.answers[currentQuestion.id] = [val[0], end];
+                                                }
+                                            }
+                                        }" />
+                                </div>
+                                <p v-if="currentQuestion.hint" class="text-sm text-gray-500 mt-2 text-center">
+                                    {{ currentQuestion.hint }}
+                                </p>
                             </div>
 
                             <div class="flex justify-center w-full">
