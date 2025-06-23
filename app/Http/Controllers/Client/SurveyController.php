@@ -22,8 +22,6 @@ class SurveyController extends Controller
             'answers.location.min' => 'Địa điểm phải có ít nhất 3 ký tự.',
             'answers.location.max' => 'Địa điểm không được vượt quá 50 ký tự.',
             'answers.duration.required' => 'Vui lòng chọn số ngày.',
-            'answers.duration.integer' => 'Số ngày phải là số nguyên.',
-            'answers.duration.min' => 'Số ngày tối thiểu là 1.',
             'answers.duration.max' => 'Số ngày tối đa là 14.',
             'answers.company.required' => 'Vui lòng chọn đối tượng đi cùng.',
             'answers.company.min' => 'Thông tin đối tượng đi cùng phải có ít nhất 2 ký tự.',
@@ -37,21 +35,30 @@ class SurveyController extends Controller
         $validatedData = $request->validate([
             'answers' => 'required|array',
             'answers.location'  => 'required|string|min:3|max:50',
-            'answers.duration'  => 'required|integer|min:1|max:14',
+            'answers.duration'  => 'required|array|max:2',
             'answers.company'   => 'required|string|min:2|max:30',
-            'answers.interests' => 'required|array|max:10',
+            'answers.interests' => 'required|array|max:5',
             'answers.interests.*' => 'string|min:4|max:50',
         ], $messages);
 
         $location = $validatedData['answers']['location'];
-        $numberOfDays = $validatedData['answers']['duration'];
+        // Validate date format for duration
+        $iso8601Regex = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/';
+        foreach (['0', '1'] as $idx) {
+            if (!empty($validatedData['answers']['duration'][$idx]) &&
+            !preg_match($iso8601Regex, $validatedData['answers']['duration'][$idx])) {
+            return back()->with('error', 'Ngày không đúng định dạng. Vui lòng chọn lại.');
+            }
+        }
+        $startDate = $validatedData['answers']['duration'][0] ?? null;
+        $endDate = $validatedData['answers']['duration'][1] ?? null;
         $company = $validatedData['answers']['company'];
-
         // avoid sending []array to the service
         $interests = implode(',', $validatedData['answers']['interests']);
         $time = implode(',', (array)$request->input('answers.time', ['all-day']));
         $foodType = implode(',', (array)$request->input('answers.food_type', ['everything']));
-        Log::info('getting tour with this info...'.$location.$numberOfDays.$company.$interests.$time.$foodType);
+
+        Log::info('getting tour with this info...'.$location.$company.$interests.$time.$foodType);
         $aiService = new AIService();
 
         //* tránh trường hợp người dùng bật F12 và xóa validation
@@ -60,8 +67,8 @@ class SurveyController extends Controller
             str_contains($interests, 'user_defined')) {
             return back()->with('error', 'Vui lòng nhập đầy đủ thông tin');
         }
-        // dd($request);
-        $result = $aiService->getTour($location, $foodType, $time, $company, $interests, $numberOfDays);
+        // dd('getting tour with this info...'.$location.$company.$interests.$time.$foodType, $startDate, $endDate);
+        $result = $aiService->getTour($location, $foodType, $time, $company, $interests, $startDate, $endDate);
         if (!$result['success']) {
             return back()->with('error', 'Đã có lỗi xảy ra khi tạo lịch trình. Vui lòng thử lại sau.');
         }
@@ -84,6 +91,8 @@ class SurveyController extends Controller
                 'type' => 'text',
                 'placeholder' => 'Ví dụ: Hà Nội, Đà Nẵng, ...',
                 'options' => [
+                    ['value' => 'hai-phong', 'label' => 'Hải Phòng'],
+                    ['value' => 'thai-binh', 'label' => 'Thái Bình'],
                     ['value' => 'ha-noi', 'label' => 'Hà Nội'],
                     ['value' => 'da-nang', 'label' => 'Đà Nẵng'],
                     ['value' => 'ho-chi-minh', 'label' => 'Hồ Chí Minh'],
@@ -96,27 +105,35 @@ class SurveyController extends Controller
                     ['value' => 'da-lat', 'label' => 'Đà Lạt']
                 ],
             ],
+            // [
+            //     'id' => 'duration', // number of days
+            //     'text' => 'Bạn sẽ đi khoảng mấy ngày?',
+            //     'type' => 'number',
+            //     'placeholder' => 'Ví dụ: 3. TỐi đa 14 ngày',
+            //     'options' => [
+            //         ['value' => '1', 'label' => '1'],
+            //         ['value' => '2', 'label' => '2'],
+            //         ['value' => '3', 'label' => '3'],
+            //         ['value' => '4', 'label' => '4'],
+            //         ['value' => '5', 'label' => '5'],
+            //         ['value' => '6', 'label' => '6'],
+            //         ['value' => '7', 'label' => '7'],
+            //         ['value' => '8', 'label' => '8'],
+            //         ['value' => '9', 'label' => '9'],
+            //         ['value' => '10', 'label' => '10'],
+            //         ['value' => '11', 'label' => '11'],
+            //         ['value' => '12', 'label' => '12'],
+            //         ['value' => '13', 'label' => '13'],
+            //         ['value' => '14', 'label' => '14'],
+            //     ],
+            // ],
             [
                 'id' => 'duration', // number of days
-                'text' => 'Bạn sẽ đi khoảng mấy ngày?',
-                'type' => 'number',
-                'placeholder' => 'Ví dụ: 3. TỐi đa 14 ngày',
-                'options' => [
-                    ['value' => '1', 'label' => '1'],
-                    ['value' => '2', 'label' => '2'],
-                    ['value' => '3', 'label' => '3'],
-                    ['value' => '4', 'label' => '4'],
-                    ['value' => '5', 'label' => '5'],
-                    ['value' => '6', 'label' => '6'],
-                    ['value' => '7', 'label' => '7'],
-                    ['value' => '8', 'label' => '8'],
-                    ['value' => '9', 'label' => '9'],
-                    ['value' => '10', 'label' => '10'],
-                    ['value' => '11', 'label' => '11'],
-                    ['value' => '12', 'label' => '12'],
-                    ['value' => '13', 'label' => '13'],
-                    ['value' => '14', 'label' => '14'],
-                ],
+                'text' => 'Bạn sẽ đi từ ngày nào đến ngày nào?',
+                'type' => 'date-range',
+                'placeholder' => 'Bấm để mở bảng chọn khoảng ngày',
+                'hint' => 'Chọn ngày bắt đầu trên bảng lịch thứ 1 sau đó chọn tiếp ngày kết thúc trên lịch, nếu ngày kết thúc nằm ở tháng sau, bấm chọn nó ở bảng lịch thứ 2. TỐi đa khoảng 14 ngày.',
+                'max' => 14
             ],
             [
                 'id' => 'company',
