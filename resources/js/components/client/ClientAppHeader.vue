@@ -20,7 +20,7 @@ const navItems = [
     { name: 'Trang chủ', route: 'home' },
     { name: 'Bắt đầu', route: 'survey.start' },
     { name: 'Dự báo thời tiết', route: 'weathercast' },
-    { name: 'Máy tính', route: 'calculator' },
+    { name: 'Lịch sử', route: 'history.index' },
 ]
 </script>
 
