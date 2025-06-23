@@ -25,7 +25,7 @@ const navItems = [
 </script>
 
 <template>
-    <header class="sticky top-0 z-50 w-full border-b bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header class="sticky top-0 z-50 w-full bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div class="container flex h-16 items-center justify-between px-4 md:px-6">
             <Link :href="route('home')">
                 <span class="mr-6 flex items-center space-x-2 font-bold text-lg">
