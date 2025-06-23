@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\History;
 use App\Models\HistoryFood;
+use App\Models\HistoryItem;
 use App\Models\HistorySightseeing;
 use App\Models\UserFavoriteFood;
 use App\Models\UserFavoriteSightseeing;
@@ -108,9 +109,64 @@ class HistoryController extends Controller
         return back()->with('success', 'Đã xóa địa điểm.');
     }
 
+    // the $id here is the HistoryItem id
+    public function addItem(Request $request, int $id, AIService $aiService){
+        // history item id: $id
+        // user prompt: in $request
+        // dd($request->all(), $id);
+        $messages = [
+            'prompt.required' => 'Vui lòng nhập yêu cầu thay thế.',
+            'prompt.string' => 'Yêu cầu thay thế không hợp lệ.',
+            'prompt.max' => 'Yêu cầu thay thế không được vượt quá 50 ký tự.',
+        ];
+        $request->validate(['prompt' => 'required|string|max:50'], $messages);
+        $userPrompt = $request->input('prompt');
+        $historyItem = HistoryItem::findOrFail($id);
+        $history = $historyItem->history;
+        $context = (object)[
+            'location' => $history->title,
+            'interests' => $history->interests,
+            'company' => $history->company,
+            'dayTime' => $historyItem->day_time,
+            'foodType' => '(decide by the newly requested item, only between food|sightseeing)',
+        ];
+        $oldItem = new HistorySightseeing([
+            'history_item_id' => $id,
+            'name' => '(this is just a placeholder item, we are at add new mode, not replace mode, you have to create a new item entirely based on the user newly requested prompt)',
+            'description' => 'any',
+            'address' => 'any',
+            'food_type' => 'any',
+        ]);
+        $type = $context->foodType;
+        // dd($type, $userPrompt, $context, $oldItem);
+        $newItemData = $aiService->getReplacementItem($type, $userPrompt, $context, $oldItem);
+
+        if (!$newItemData) {
+            return back()->with('error', 'Không thể tìm thấy địa điểm thay thế. Vui lòng thử lại với yêu cầu khác.');
+        }
+
+        DB::transaction(function () use ($newItemData, $type, $id) {
+            $newItemData['history_item_id'] = $id;
+            if ($type === 'food') {
+                HistoryFood::create($newItemData);
+            } else {
+                unset($newItemData['food_type']);
+                HistorySightseeing::create($newItemData);
+            }
+        });
+
+        return back()->with('success', 'Đã thêm địa điểm mới!');
+    }
+
+    // the $id here is the id of HistoryFood or HistorySightseeing (judge by $type)
     public function replaceItem(Request $request, string $type, int $id, AIService $aiService)
     {
-        $request->validate(['prompt' => 'required|string|max:255']);
+        $messages = [
+            'prompt.required' => 'Vui lòng nhập yêu cầu thay thế.',
+            'prompt.string' => 'Yêu cầu thay thế không hợp lệ.',
+            'prompt.max' => 'Yêu cầu thay thế không được vượt quá 50 ký tự.',
+        ];
+        $request->validate(['prompt' => 'required|string|max:50'], $messages);
         $userPrompt = $request->input('prompt');
 
         if ($type === 'food') {
@@ -151,6 +207,6 @@ class HistoryController extends Controller
             }
         });
 
-        return back()->with('success', 'Đã cập nhật địa điểm thành công!');
+        return back()->with('success', 'Đã cập nhật địa điểm!');
     }
 }
