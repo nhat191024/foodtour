@@ -15,7 +15,15 @@ import {
     Calendar,
     Search,
     Loader2
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
+import { showToast } from '@/composables/useToasts';
+
+const formatDateForInput = (date) => {
+    return date.toISOString().split('T')[0];
+};
+
+const today = new Date();
+const nextWeek = new Date();
 
 const props = defineProps({
     summary_location: {
@@ -34,8 +42,8 @@ const props = defineProps({
 
 const form = ref({
     location: props.location,
-    start_date: '',
-    end_date: ''
+    start_date: formatDateForInput(today),
+    end_date: formatDateForInput(nextWeek),
 })
 
 const isLoading = ref(false)
@@ -53,6 +61,7 @@ const weatherData = ref((props.data && props.data.length > 0) ? props.data : [
 ]);
 
 const searchLocations = (query) => {
+    return;
     if (!query || query.length < 2) {
         searchResults.value = []
         showSuggestions.value = false
@@ -86,6 +95,23 @@ const debouncedSearch = (query) => {
 watch(() => form.value.location, (newValue) => {
     debouncedSearch(newValue)
 })
+
+watch([() => form.value.start_date, () => form.value.end_date], ([newStart, newEnd]) => {
+    if (newStart && newEnd) {
+        const startDate = new Date(newStart);
+        const endDate = new Date(newEnd);
+
+        if (startDate > endDate) {
+            showToast('Ngày bắt đầu không thể sau ngày kết thúc. Đã tự động sửa lại.', 'error');
+            const todayDate = new Date();
+            const tomorrowDate = new Date();
+            tomorrowDate.setDate(todayDate.getDate() + 1);
+
+            form.value.start_date = formatDateForInput(todayDate);
+            form.value.end_date = formatDateForInput(tomorrowDate);
+        }
+    }
+});
 
 const selectLocation = (location) => {
     form.value.location = location.name || location
@@ -149,6 +175,9 @@ const getWeatherIcon = (weather) => {
         return Cloud
     }
 }
+
+
+nextWeek.setDate(today.getDate() + 7);
 </script>
 
 <style scoped>
@@ -164,115 +193,118 @@ const getWeatherIcon = (weather) => {
     max-height: 200px;
     overflow-y: auto;
 }
+
 </style>
 
 <template>
     <ClientLayout>
-        <!-- weather forecast form -->
-        <div class="w-full mx-auto bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Tìm kiếm dự báo thời tiết</h2>
+        <div class="flex flex-col items-center p-5">
+            <!-- weather forecast form -->
+            <div class="w-full mx-auto bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Tìm kiếm dự báo thời tiết</h2>
 
-            <form @submit.prevent="submitForm" class="space-y-4">
-                <div class="relative">
-                    <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
-                        <MapPin class="w-4 h-4 inline mr-1" />
-                        Địa điểm
-                    </label>
+                <form @submit.prevent="submitForm" class="space-y-4">
                     <div class="relative">
-                        <input id="location" v-model="form.location" type="text" placeholder="Nhập tên thành phố..."
-                            class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            autocomplete="off" @blur="hideSuggestions" required />
+                        <label for="location" class="block text-sm font-medium text-gray-700 mb-2">
+                            <MapPin class="w-4 h-4 inline mr-1" />
+                            Địa điểm
+                        </label>
+                        <div class="relative">
+                            <input id="location" v-model="form.location" type="text" placeholder="Nhập tên thành phố..."
+                                class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                autocomplete="off" @blur="hideSuggestions" required />
 
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <Loader2 v-if="isSearching" class="w-4 h-4 text-gray-400 animate-spin" />
-                            <Search v-else class="w-4 h-4 text-gray-400" />
-                        </div>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <Loader2 v-if="isSearching" class="w-4 h-4 text-gray-400 animate-spin" />
+                                <Search v-else class="w-4 h-4 text-gray-400" />
+                            </div>
 
-                        <div v-if="showSuggestions && searchResults.length > 0"
-                            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg suggestions-dropdown">
-                            <ul class="py-1">
-                                <li v-for="(location, index) in searchResults" :key="index"
-                                    @click="selectLocation(location)"
-                                    class="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center">
-                                    <MapPin class="w-4 h-4 text-gray-400 mr-2" />
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-900">
-                                            {{ location.name || location }}
+                            <div v-if="showSuggestions && searchResults.length > 0"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg suggestions-dropdown">
+                                <ul class="py-1">
+                                    <li v-for="(location, index) in searchResults" :key="index"
+                                        @click="selectLocation(location)"
+                                        class="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center">
+                                        <MapPin class="w-4 h-4 text-gray-400 mr-2" />
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ location.name || location }}
+                                            </div>
+                                            <div v-if="location.country" class="text-xs text-gray-500">
+                                                {{ location.country }}
+                                            </div>
                                         </div>
-                                        <div v-if="location.country" class="text-xs text-gray-500">
-                                            {{ location.country }}
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
+                                    </li>
+                                </ul>
+                            </div>
 
-                        <div v-if="showSuggestions && searchResults.length === 0 && !isSearching && form.location.length >= 2"
-                            class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                            <div class="px-3 py-2 text-sm text-gray-500">
-                                Không tìm thấy địa điểm nào
+                            <div v-if="showSuggestions && searchResults.length === 0 && !isSearching && form.location.length >= 2"
+                                class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                <div class="px-3 py-2 text-sm text-gray-500">
+                                    Không tìm thấy địa điểm nào
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            <Calendar class="w-4 h-4 inline mr-1" />
-                            Ngày bắt đầu
-                        </label>
-                        <input id="start_date" v-model="form.start_date" type="date"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                <Calendar class="w-4 h-4 inline mr-1" />
+                                Ngày bắt đầu
+                            </label>
+                            <input id="start_date" v-model="form.start_date" type="date"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required />
+                        </div>
+
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                <Calendar class="w-4 h-4 inline mr-1" />
+                                Ngày kết thúc
+                            </label>
+                            <input id="end_date" v-model="form.end_date" type="date"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required />
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            <Calendar class="w-4 h-4 inline mr-1" />
-                            Ngày kết thúc
-                        </label>
-                        <input id="end_date" v-model="form.end_date" type="date"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required />
+                    <div class="flex justify-center pt-2">
+                        <Button type="submit" :disabled="isLoading"
+                            class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            <span v-if="isLoading">Đang tải...</span>
+                            <span v-else>Lấy dự báo thời tiết</span>
+                        </Button>
                     </div>
-                </div>
-
-                <div class="flex justify-center pt-2">
-                    <Button type="submit" :disabled="isLoading"
-                        class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                        <span v-if="isLoading">Đang tải...</span>
-                        <span v-else>Lấy dự báo thời tiết</span>
-                    </Button>
-                </div>
-            </form>
-        </div>
-
-        <div class="w-full mx-auto bg-white rounded-lg shadow-lg p-6">
-            <div class="mb-6">
-                <p class="text-sm text-gray-600 mb-1">Dự báo thời tiết</p>
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ summary_location }}</h1>
-                <p class="text-sm text-gray-500">
-                    Từ {{ formatDate(weatherData[0]?.date) }} đến {{ formatDate(weatherData[weatherData.length -
-                    1]?.date) }}
-                    ({{ weatherData.length }} ngày)
-                </p>
+                </form>
             </div>
 
-            <div class="grid grid-cols-4 gap-3">
-                <div v-for="(day, index) in weatherData" :key="index"
-                    class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
-                    <div class="text-xs font-medium text-gray-600 mb-3">
-                        {{ getDayLabel(day.date) }}
-                    </div>
+            <div class="w-full mx-auto bg-white rounded-lg shadow-lg p-6">
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 mb-1">Dự báo thời tiết</p>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ summary_location }}</h1>
+                    <p class="text-sm text-gray-500">
+                        Từ {{ formatDate(weatherData[0]?.date) }} đến {{ formatDate(weatherData[weatherData.length -
+                            1]?.date) }}
+                        ({{ weatherData.length }} ngày)
+                    </p>
+                </div>
 
-                    <div class="flex justify-center mb-3">
-                        <component :is="getWeatherIcon(day.weather)" class="w-8 h-8 text-gray-700" />
-                    </div>
+                <div class="grid grid-cols-4 gap-3">
+                    <div v-for="(day, index) in weatherData" :key="index"
+                        class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                        <div class="text-xs font-medium text-gray-600 mb-3">
+                            {{ getDayLabel(day.date) }}
+                        </div>
 
-                    <div class="text-sm">
-                        <span class="font-medium text-gray-900">{{ Math.round(day.temperature) }}°</span>
-                        <span class="text-gray-500 ml-1">{{ Math.round(day.temperature) }}°C</span>
+                        <div class="flex justify-center mb-3">
+                            <component :is="getWeatherIcon(day.weather)" class="w-8 h-8 text-gray-700" />
+                        </div>
+
+                        <div class="text-sm">
+                            <span class="font-medium text-gray-900">{{ Math.round(day.temperature) }}°</span>
+                            <span class="text-gray-500 ml-1">{{ Math.round(day.temperature) }}°C</span>
+                        </div>
                     </div>
                 </div>
             </div>
