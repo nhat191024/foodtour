@@ -66,4 +66,5 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/history-food/{food}', [HistoryController::class, 'destroyFood'])->name('history.food.destroy');
     Route::delete('/history-sightseeing/{sightseeing}', [HistoryController::class, 'destroySightseeing'])->name('history.sightseeing.destroy');
     Route::post('/history-items/{type}/{id}/replace', [HistoryController::class, 'replaceItem'])->name('history.item.replace');
+    Route::post('/history-items/{id}/add', [HistoryController::class, 'addItem'])->name('history.item.add');
 });
