@@ -26,6 +26,11 @@ class AIService
 {
     private Gemini\Client $client;
     private  $weatherService;
+    private const aiNotice = "
+        Lưu ý: Các đặc điểm quan tâm sẽ không còn bắt buộc nếu gần địa điểm được chọn không thể đáp ứng được, khi điều đó xảy ra, hãy đưa ra gợi ý gần giống kèm lời xin lỗi và giải thích.
+        Lưu ý 2: Tất cả những dòng description hãy cố gắng viết một cách súc tích, bởi vì người đọc sẽ nhanh cảm thấy chán nếu quá dài.
+        Lưu ý 3: Vui lòng sửa tất cả lỗi chính tả tồn tại trong input/output lịch trình. Nếu trong nội dung yêu cầu của tôi có chứa những từ ngữ viết tắt hoặc từ ngữ mang tính không phù hợp như: xúc phạm, spam, phân biệt đối xử, đùa giỡn, cợt nhả, hãy sửa lại cho đúng chính tả và viết lại nội dung đó một cách tế nhị và dễ hiểu nhất, đồng thời bắt buộc nhắc nhở hoặc cảnh báo nguy cơ bị hủy kích hoạt tài khoản của người dùng về việc này.
+    ";
 
     public function __construct()
     {
@@ -54,7 +59,6 @@ class AIService
         string $time,
         string $company,
         string $interests,
-        ?int $numberOfDays = 0,
         ?string $startDate = null,
         ?string $endDate = null,
         ) : array
@@ -67,11 +71,9 @@ class AIService
             $location .= ', Vietnam';
         }
         $startDate ??= date('Y-m-d');
-        $endDate ??= date('Y-m-d', strtotime("+$numberOfDays days"));
+        $endDate ??= date('Y-m-d', strtotime("+1 days"));
         $weather = $this->weatherService->getWeatherInVietnam($location, $startDate, $endDate);
-        // weather service requires a start date and end date
-        $numberOfDays = $numberOfDays > 0 ? $numberOfDays : 1;
-
+        $notice = self::aiNotice;
         $response = null;
 
         if (env('AI_SERVICE_DEBUG') === false) {
@@ -82,7 +84,7 @@ class AIService
         - Các địa điểm tham quan nên ở gần các địa điểm ăn uống, không quá xa.
         - Thông tin thời tiết cho khu vực này: " . json_encode($weather, JSON_UNESCAPED_UNICODE) . ". Hãy sử dụng thông tin này để gợi ý các địa điểm ăn uống và tham quan phù hợp với thời tiết.
         - Thời gian trong ngày tôi muốn tập trung: $time (Có thể là 'morning', 'lunch', 'afternoon', 'evening', hoặc 'full day'). Nếu là 'full day', hãy bao gồm tất cả các khung thời gian sáng, trưa, chiều, tối. Không được tự ý gợi ý thêm ngoài những buổi trong ngày tôi chọn.
-        - Số ngày: $numberOfDays
+        - Số ngày đi (bạn hãy tự suy ra số ngày dựa trên khoảng ngày sau đây, vui lòng bỏ qua dữ liệu giờ, phút, giây và chỉ tính theo ngày tháng): Từ $startDate đến $endDate
         - Tôi đi cùng với : $company
         - Những đặc điểm tôi quan tâm: $interests
 
@@ -92,10 +94,10 @@ class AIService
         - **'address'**: Địa chỉ cụ thể.
         - **'latitude'**: Vĩ độ. Nếu không có giá trị chính xác, hãy cung cấp một số ước tính hợp lý.
         - **'longitude'**: Kinh độ. Nếu không có giá trị chính xác, hãy cung cấp một số ước tính hợp lý.
-        - **'description'**: Mô tả chi tiết về địa điểm và lý do gợi ý (ví dụ: món ăn đặc trưng, điểm nổi bật của địa điểm tham quan).
+        - **'description'**: Mô tả súc tích về địa điểm và lý do gợi ý (ví dụ: món ăn đặc trưng, điểm nổi bật của địa điểm tham quan).
         - **'food_type'**: Chỉ bao gồm trường này và gán giá trị '$foodType' nếu 'type' là 'food'. Không bao gồm trường này nếu 'type' là 'sightseeing'.
 
-        Lưu ý: Các đặc điểm quan tâm sẽ không còn bắt buộc nếu gần địa điểm được chọn không thể đáp ứng được, khi điều đó xảy ra, hãy đưa ra gợi ý gần giống kèm lời xin lỗi và giải thích.
+        $notice
         ";
         // **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
 
@@ -322,7 +324,7 @@ class AIService
         $company = $context->company;
         $dayTime = $context->dayTime;
         $foodType = $context->foodType ?? 'đa dạng';
-
+        $notice = self::aiNotice;
         $vietnameseType = $type === 'food' ? 'địa điểm ăn uống' : 'địa điểm tham quan';
 
         $prompt = "
@@ -344,8 +346,10 @@ class AIService
         - 'address': Địa chỉ cụ thể.
         - 'latitude': Vĩ độ.
         - 'longitude': Kinh độ.
-        - 'description': Mô tả chi tiết về địa điểm mới và lý do nó phù-hợp với yêu cầu.
+        - 'description': Mô tả súc tích về địa điểm mới và lý do nó phù-hợp với yêu cầu.
         - 'food_type': Chỉ bao gồm trường này và gán giá trị '$foodType' nếu loại địa điểm là 'food'.
+
+        $notice
         ";
 
         try {
