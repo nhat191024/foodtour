@@ -29,7 +29,7 @@ const navItems = [
         <div class="container flex h-16 items-center justify-between px-4 md:px-6">
             <Link :href="route('home')">
                 <span class="mr-6 flex items-center space-x-2 font-bold text-lg">
-                    FoodTourVN
+                    TravelVN
                 </span>
             </Link>
 
