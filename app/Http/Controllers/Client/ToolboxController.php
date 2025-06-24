@@ -29,10 +29,19 @@ class ToolboxController extends Controller
             abort(403);
         }
 
+        $mesages = [
+            'name.required' => 'Tên chi phí là bắt buộc.',
+            'name.string' => 'Tên chi phí phải là chuỗi ký tự.',
+            'name.max' => 'Tên chi phí không được vượt quá 255 ký tự.',
+            'value.required' => 'Giá trị chi phí là bắt buộc.',
+            'value.numeric' => 'Giá trị chi phí phải là số.',
+            'value.min' => 'Giá trị chi phí không được nhỏ hơn 0.',
+        ];
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'value' => 'required|numeric|min:0',
-        ]);
+        ], $mesages);
 
         $history->tripCosts()->create($validated);
 
@@ -64,10 +73,20 @@ class ToolboxController extends Controller
         if ($cost->history->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        $messages = [
+            'name.required' => 'Tên chi phí là bắt buộc.',
+            'name.string' => 'Tên chi phí phải là chuỗi ký tự.',
+            'name.max' => 'Tên chi phí không được vượt quá 255 ký tự.',
+            'value.required' => 'Giá trị chi phí là bắt buộc.',
+            'value.numeric' => 'Giá trị chi phí phải là số.',
+            'value.min' => 'Giá trị chi phí không được nhỏ hơn 0.',
+        ];
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'value' => 'required|numeric|min:0',
-        ]);
+        ], $messages);
+
         $cost->update($validated);
 
         return back()->with('success', 'Đã cập nhật chi phí.');
