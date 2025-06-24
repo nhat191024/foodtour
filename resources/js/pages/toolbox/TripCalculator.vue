@@ -114,6 +114,17 @@ const submitEditCost = () => {
 const isConfirmDeleteModalOpen = ref(false);
 const costIdToDelete = ref(null);
 const isEditCostModalOpen = ref(false);
+
+const incrementMembers = () => {
+    numberOfMembers.value++;
+};
+
+const decrementMembers = () => {
+    // Thêm điều kiện để đảm bảo số người không nhỏ hơn 1
+    if (numberOfMembers.value > 1) {
+        numberOfMembers.value--;
+    }
+};
 </script>
 
 <template>
@@ -157,22 +168,50 @@ const isEditCostModalOpen = ref(false);
                 <div class="bg-white p-6 rounded-lg shadow-md h-fit">
                     <h2 class="text-xl font-semibold mb-4 border-b pb-3">Bảng tính</h2>
                     <div class="space-y-4">
+                        <!-- Tổng chi phí (không đổi) -->
                         <div class="flex justify-between items-baseline">
                             <span class="text-gray-600">Tổng cộng:</span>
                             <span class="text-2xl font-bold text-blue-600">{{ totalCost.toLocaleString() }} VND</span>
                         </div>
+
+                        <!--
+                        KHỐI INPUT SỐ NGƯỜI ĐÃ ĐƯỢC THAY THẾ
+                        -->
                         <div>
-                            <label for="members" class="block text-sm font-medium text-gray-600 mb-1">Chia cho:</label>
-                            <input id="members" type="number" v-model.number="numberOfMembers" min="1"
-                                class="w-full p-2 border rounded-md" />
+                            <label for="members" class="block text-sm font-medium text-gray-600 mb-2">Chia cho số người:</label>
+                            <div class="flex items-center justify-center gap-4">
+                                <!-- Nút Trừ (-) -->
+                                <Button
+                                    variant="outline"
+                                    @click="decrementMembers"
+                                    :disabled="numberOfMembers <= 1"
+                                    class="h-10 w-10 p-0 rounded-full disabled:opacity-50"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                                </Button>
+
+                                <!-- Hiển thị số lượng -->
+                                <span class="text-2xl font-bold w-12 text-center">{{ numberOfMembers }}</span>
+
+                                <!-- Nút Cộng (+) -->
+                                <Button
+                                    variant="outline"
+                                    @click="incrementMembers"
+                                    class="h-10 w-10 p-0 rounded-full"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                </Button>
+                            </div>
                         </div>
+
+                        <!-- Chi phí mỗi người (không đổi) -->
                         <div class="flex justify-between items-baseline pt-4 border-t">
                             <span class="font-medium">Mỗi người trả:</span>
-                            <span class="text-xl font-bold text-green-600">{{ costPerPerson.toLocaleString(undefined,
-                                {maximumFractionDigits: 0}) }} VND</span>
+                            <span class="text-xl font-bold text-green-600">{{ costPerPerson.toLocaleString(undefined, { maximumFractionDigits: 0 }) }} VND</span>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
