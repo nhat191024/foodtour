@@ -19,7 +19,7 @@ const footerNav = [
         items: [
             { name: 'Trang chủ', route: 'home' },
             { name: 'Bắt đầu ngay', route: 'survey.start' },
-            { name: 'Dự báo thời tiết', route: 'weathercast' },
+            { name: 'Xem thời tiết', route: 'weathercast' },
             { name: 'Máy tính', route: 'calculator' },
         ],
     }
