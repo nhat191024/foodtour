@@ -17,7 +17,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/tour/start', [SurveyController::class, 'index'])->name('survey.start');
 // avoid spamming
-Route::post('/tour/complete', [SurveyController::class, 'store'])->middleware('throttle:3,1')->name('survey.store');
+Route::post('/tour/complete', [SurveyController::class, 'store'])->middleware('throttle:2,1')->name('survey.store');
 Route::get('/tour/result/{id}', [HistoryController::class, 'detail'])->name('survey.result');
 Route::get('/tour/history', [HistoryController::class, 'index'])->name('history.index');
 Route::get('/login', [LoginController::class, 'login'])->name('login');
@@ -63,8 +63,14 @@ Route::delete('/trip-costs/{cost}', [ToolboxController::class, 'destroyTripCost'
     ->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
-    Route::delete('/history-food/{food}', [HistoryController::class, 'destroyFood'])->name('history.food.destroy');
-    Route::delete('/history-sightseeing/{sightseeing}', [HistoryController::class, 'destroySightseeing'])->name('history.sightseeing.destroy');
-    Route::post('/history-items/{type}/{id}/replace', [HistoryController::class, 'replaceItem'])->name('history.item.replace');
-    Route::post('/history-items/{id}/add', [HistoryController::class, 'addItem'])->name('history.item.add');
+    Route::delete('/history-food/{food}', [HistoryController::class, 'destroyFood'])
+        ->name('history.food.destroy');
+    Route::delete('/history-sightseeing/{sightseeing}', [HistoryController::class, 'destroySightseeing'])
+        ->name('history.sightseeing.destroy');
+    Route::post('/history-items/{type}/{id}/replace', [HistoryController::class, 'replaceItem'])
+        ->middleware('throttle:3,1')
+        ->name('history.item.replace');
+    Route::post('/history-items/{id}/add', [HistoryController::class, 'addItem'])
+        ->middleware('throttle:3,1')
+        ->name('history.item.add');
 });
