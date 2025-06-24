@@ -16,13 +16,49 @@ const currentUser = ref({
     bannerUrl: "/images/profile-banner.jpg", // fix later
 })
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Loader2 } from 'lucide-vue-next'
+
+const isLogoutModalOpen = ref(false)
+const logoutFormProcessing = ref(false)
+
 const handleLogout = () => {
-    router.flushAll();
-};
+    isLogoutModalOpen.value = true
+}
+
+const confirmLogout = () => {
+    logoutFormProcessing.value = true
+    router.post(route('logout'), {}, {
+        onFinish: () => {
+            logoutFormProcessing.value = false
+            isLogoutModalOpen.value = false
+        }
+    })
+}
 </script>
 
 <template>
     <ClientLayout>
+        <Dialog :open="isLogoutModalOpen" @update:open="isLogoutModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="confirmLogout">
+                    <DialogHeader>
+                        <DialogTitle>Đăng xuất</DialogTitle>
+                        <DialogDescription>
+                            <p class="mb-3">Bạn có chắc chắn muốn đăng xuất?</p>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" @click="isLogoutModalOpen = false">Hủy</Button>
+                        <Button type="submit" :disabled="logoutFormProcessing">
+                            <Loader2 v-if="logoutFormProcessing" class="w-4 h-4 mr-2 animate-spin" />
+                            Xác nhận đăng xuất
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             <div class="relative w-full h-48 md:h-64 overflow-hidden">
                 <img :src="currentUser.bannerUrl || '/placeholder.svg'" alt="Profile banner"
@@ -41,18 +77,19 @@ const handleLogout = () => {
                         </span> -->
                     </div>
 
-                    <div class="ml-4 flex flex-col mb-2 md:mb-4">
+                    <div class="ml-2 md:ml-4 flex flex-col mb-2 md:mb-4">
                         <div class="flex items-center">
-                            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{{
-                                currentUser.username }}</h2>
+                            <h2 class="text-lg md:text-3xl font-bold text-gray-900 dark:text-white">
+                                {{ currentUser.username }}
+                            </h2>
                             <Link :href="route('profile.edit')">
-                            <button
-                                class="ml-2 md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
-                                <PencilIcon class="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                            </button>
+                                <button
+                                    class="ml-2 md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                                    <PencilIcon class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                </button>
                             </Link>
                         </div>
-                        <p class="text-gray-500 text-lg">{{ currentUser.handle }}</p>
+                        <p class="text-gray-500 text-sm md:text-lg">{{ currentUser.handle }}</p>
                     </div>
                 </div>
 
@@ -67,14 +104,14 @@ const handleLogout = () => {
             <div class="p-4 md:p-8 mt-4 md:mt-8">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Link :href="route('profile.favorite')" class="w-full">
-                    <Button :class="'cursor-pointer inline-flex w-full h-10 px-4 py-6 text-lg'">
-                        Yêu thích
-                    </Button>
+                        <Button size="sm" :class="'cursor-pointer inline-flex w-full text-sm'">
+                            Yêu thích
+                        </Button>
                     </Link>
                     <Link :href="route('history.index')" class="w-full">
-                    <Button :class="'cursor-pointer inline-flex w-full h-10 px-4 py-6 text-lg'">
-                        Lịch sử
-                    </Button>
+                        <Button size="sm" :class="'cursor-pointer inline-flex w-full text-sm'">
+                            Lịch sử
+                        </Button>
                     </Link>
                 </div>
 
@@ -83,11 +120,11 @@ const handleLogout = () => {
                         Chưa có nội dung nào ở đây...
                 </div>
                 <div class="p-4 md:p-8">
-                    <Link class="block w-full" method="post" :href="route('logout')" @click="handleLogout" as="button">
-                    <Button variant="outline" class="w-full text-red-500 border-red-500 hover:bg-red-50">
-                        Đăng xuất
-                    </Button>
-                    </Link>
+                    <div class="block w-full" @click="handleLogout">
+                        <Button variant="outline" class="w-full text-red-500 border-red-500 hover:bg-red-50">
+                            Đăng xuất
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
