@@ -29,8 +29,8 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Welcome back" description="Sign in to explore new trips.">
-        <Head title="Log in" />
+    <AuthBase title="Chào mừng bạn trở lại" description="Đăng nhập để bắt đầu tạo chuyến đi.">
+        <Head title="Đăng nhập" />
 
         <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
             {{ status }}
@@ -39,7 +39,7 @@ const submit = () => {
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">Email</Label>
                     <Input
                         id="email"
                         type="email"
@@ -55,9 +55,9 @@ const submit = () => {
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
+                        <Label for="password">Mật khẩu</Label>
                         <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
+                            Quên mật khẩu?
                         </TextLink>
                     </div>
                     <Input
@@ -75,13 +75,13 @@ const submit = () => {
                 <div class="flex items-center justify-between">
                     <Label for="remember" class="flex items-center space-x-3">
                         <Checkbox id="remember" v-model="form.remember" :tabindex="3" />
-                        <span>Remember me</span>
+                        <span>Lưu đăng nhập</span>
                     </Label>
                 </div>
 
                 <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
+                    Đăng nhập
                 </Button>
                 <a :href="route('login.google')">
                     <Button
@@ -107,14 +107,14 @@ const submit = () => {
                                 d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0c-4.69 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
                             />
                         </svg>
-                        Sign in with Google
+                        Đăng nhập với Google
                     </Button>
                 </a>
             </div>
 
             <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
+                Chưa có tài khoản?
+                <TextLink :href="route('register')" :tabindex="5">Đăng ký</TextLink>
             </div>
         </form>
     </AuthBase>
