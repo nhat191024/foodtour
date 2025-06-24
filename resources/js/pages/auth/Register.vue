@@ -23,25 +23,25 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Create an account" description="Enter your details below to create your account">
-        <Head title="Register" />
+    <AuthBase title="Đăng ký tài khoản" description="Một tài khoản cho mọi dịch vụ">
+        <Head title="Đăng ký" />
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name">Tên</Label>
                     <Input id="name" type="text" required autofocus :tabindex="1" autocomplete="name" v-model="form.name" placeholder="Full name" />
                     <InputError :message="form.errors.name" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email">Email</Label>
                     <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
                     <InputError :message="form.errors.email" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password">Mật khẩu</Label>
                     <Input
                         id="password"
                         type="password"
@@ -55,7 +55,7 @@ const submit = () => {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
+                    <Label for="password_confirmation">Xác nhận mật khẩu</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
@@ -70,7 +70,7 @@ const submit = () => {
 
                 <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Create account
+                    Tạo tài khoản
                 </Button>
                 <a :href="route('login.google')">
                     <Button
@@ -96,14 +96,14 @@ const submit = () => {
                                 d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0c-4.69 0-8.74 2.7-10.71 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
                             />
                         </svg>
-                        Sign in with Google
+                        Đăng ký với Google
                     </Button>
                 </a>
             </div>
 
             <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Log in</TextLink>
+                Đã có tài khoản rồi?
+                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Đăng nhập</TextLink>
             </div>
         </form>
     </AuthBase>
