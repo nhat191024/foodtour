@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: food-tourism-app
+    container_name: food-tourism-app
+    restart: unless-stopped
+    ports:
+      - '10001:80'
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/storage
