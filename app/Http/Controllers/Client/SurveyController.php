@@ -15,10 +15,20 @@ class SurveyController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-
+        // $start = time();
+        // while (time() - $start < 30) {
+        //     sleep(1);
+        // }
+        // dd($request->all());
         $messages = [
             'answers.required' => 'Vui lòng điền đầy đủ thông tin.',
             'answers.location.required' => 'Vui lòng nhập địa điểm.',
+            'answers.member_count.required' => 'Vui lòng nhập số người đi.',
+            'answers.member_count.required' => 'Vui lòng nhập số người đi.',
+            'answers.member_count.integer' => 'Số người đi phải là một số nguyên.',
+            'answers.member_count.min' => 'Số người đi tối thiểu là 1.',
+            'answers.member_count.max' => 'Số người đi tối đa là 53.',
+            'answers.food_type.required' => 'Vui lòng nhập loại món ăn.',
             'answers.location.min' => 'Địa điểm phải có ít nhất 3 ký tự.',
             'answers.location.max' => 'Địa điểm không được vượt quá 50 ký tự.',
             'answers.duration.required' => 'Vui lòng chọn số ngày.',
@@ -38,6 +48,9 @@ class SurveyController extends Controller
             'answers.duration'  => 'required|array|max:2',
             'answers.company'   => 'required|string|min:2|max:30',
             'answers.interests' => 'required|array|max:5',
+            'answers.food_type' => 'required|array|max:5',
+            'answers.food_type.*' => 'string|min:4|max:50',
+            'answers.member_count' => 'required|integer|min:1|max:53',
             'answers.interests.*' => 'string|min:4|max:50',
         ], $messages);
 
@@ -53,6 +66,7 @@ class SurveyController extends Controller
         $startDate = $validatedData['answers']['duration'][0] ?? null;
         $endDate = $validatedData['answers']['duration'][1] ?? null;
         $company = $validatedData['answers']['company'];
+        $memberCount = $validatedData['answers']['member_count'];
         // avoid sending []array to the service
         $interests = implode(',', $validatedData['answers']['interests']);
         $time = implode(',', (array)$request->input('answers.time', ['all-day']));
@@ -68,7 +82,12 @@ class SurveyController extends Controller
             return back()->with('error', 'Vui lòng nhập đầy đủ thông tin');
         }
         // dd('getting tour with this info...'.$location.$company.$interests.$time.$foodType, $startDate, $endDate);
-        $result = $aiService->getTour($location, $foodType, $time, $company, $interests, $startDate, $endDate);
+        $currentLocation = $request->input('current_location');
+        if (is_null($currentLocation) || $currentLocation === '') {
+            $currentLocation = 'Người dùng chưa cung cấp';
+        }
+        $currentLocation = mb_substr($currentLocation, 0, 60);
+        $result = $aiService->getTour($location, $foodType, $time, $company, $interests, $memberCount, $currentLocation, $startDate, $endDate);
         if (!$result['success']) {
             return back()->with('error', 'Đã có lỗi xảy ra khi tạo lịch trình. Vui lòng thử lại sau.');
         }
@@ -136,6 +155,28 @@ class SurveyController extends Controller
                 'max' => 14
             ],
             [
+                'id' => 'member_count',
+                'text' => 'Bạn sẽ đi cùng bao nhiêu người?',
+                'type' => 'number',
+                'placeholder' => 'Điền số người tham gia hành trình. VD: 8',
+                'options' => [
+                    ['value' => '1', 'label' => '1'],
+                    ['value' => '2', 'label' => '2'],
+                    ['value' => '3', 'label' => '3'],
+                    ['value' => '4', 'label' => '4'],
+                    ['value' => '5', 'label' => '5'],
+                    ['value' => '6', 'label' => '6'],
+                    ['value' => '7', 'label' => '7'],
+                    ['value' => '8', 'label' => '8'],
+                    ['value' => '9', 'label' => '9'],
+                    ['value' => '10', 'label' => '10'],
+                    ['value' => '11', 'label' => '11'],
+                    ['value' => '12', 'label' => '12'],
+                    ['value' => '13', 'label' => '13'],
+                    ['value' => '14', 'label' => '14'],
+                ],
+            ],
+            [
                 'id' => 'company',
                 'text' => 'Bạn sẽ đi cùng với ai?',
                 'type' => 'radio',
@@ -152,9 +193,10 @@ class SurveyController extends Controller
                 'text' => 'Bạn thích những loại món ăn nào?',
                 'type' => 'checkbox',
                 'options' => [
-                    ['allow_multi_select'=>true, 'value' => 'Phở và các món nước', 'label' => 'Phở và các món nước'],
+                    ['allow_multi_select'=>true, 'value' => 'Phở và các món canh hoặc nước', 'label' => 'Phở và các món canh, nước'],
                     ['allow_multi_select'=>true, 'value' => 'Các loại bánh truyền thống', 'label' => 'Các loại bánh truyền thống'],
                     ['allow_multi_select'=>true, 'value' => 'Cơm và món mặn', 'label' => 'Cơm và món mặn'],
+                    ['allow_multi_select'=>true, 'value' => 'Đặc sản địa phương', 'label' => 'Đặc sản địa phương'],
                     ['allow_multi_select'=>false, 'value' => 'user_defined', 'label' => 'Khác, bạn tự nhập', 'placeholder' => 'TỐi đa 50 ký tự, nói về sở thích món ăn của bạn' ],
                 ],
             ],
