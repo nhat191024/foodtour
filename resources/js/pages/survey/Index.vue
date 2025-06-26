@@ -23,7 +23,7 @@ const props = defineProps({
     summary_location: String,
     data: { type: Array, default: () => [] },
     locations: { type: Array, default: () => [] },
-    initialLocation: { type: String, default: 'Hải Phòng' }
+    initialLocation: { type: String, default: '' }
 });
 
 const currentStep = ref(0);
