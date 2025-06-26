@@ -15,11 +15,6 @@ class SurveyController extends Controller
         if (!auth()->check()) {
             return redirect()->route('login');
         }
-        // $start = time();
-        // while (time() - $start < 30) {
-        //     sleep(1);
-        // }
-        // dd($request->all());
         $messages = [
             'answers.required' => 'Vui lòng điền đầy đủ thông tin.',
             'answers.location.required' => 'Vui lòng nhập địa điểm.',
