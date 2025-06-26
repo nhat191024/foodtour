@@ -47,22 +47,23 @@ class AIService
      * @param string $time buổi sáng/trưa/chiều/tối
      * @param string $company đi cùng với ai
      * @param string $interests sở thích, đặc điểm khác
+     * @param string $currentLocation địa điểm hiện tại
      * @param int|null $numberOfDays số ngày đi
      * @param string|null $startDate chủ yếu để phục vụ lấy thời tiết
      * @param string|null $endDate chủ yếu để phục vụ lấy thời tiết
      * @return array|null function này sẽ chỉ return id của bản ghi History mới được tạo
      */
-    public function getTour
-    (
+    public function getTour(
         string $location,
         string $foodType,
         string $time,
         string $company,
         string $interests,
+        string $memberCount,
+        string $currentLocation,
         ?string $startDate = null,
         ?string $endDate = null,
-        ) : array
-    {
+    ): array {
         // add vietnam to the location if not already present
         if (!str_contains($location, 'Vietnam')) {
             $location .= ', Vietnam';
@@ -75,6 +76,7 @@ class AIService
         $weather = $this->weatherService->getWeatherInVietnam($location, $startDate, $endDate);
         $notice = self::aiNotice;
         $response = null;
+        $memberCountString = $memberCount . ' người';
 
         if (env('AI_SERVICE_DEBUG') === false) {
             $prompt = "
@@ -86,7 +88,9 @@ class AIService
         - Thời gian trong ngày tôi muốn tập trung: $time (Có thể là 'morning', 'lunch', 'afternoon', 'evening', hoặc 'full day'). Nếu là 'full day', hãy bao gồm tất cả các khung thời gian sáng, trưa, chiều, tối. Không được tự ý gợi ý thêm ngoài những buổi trong ngày tôi chọn.
         - Số ngày đi (bạn hãy tự suy ra số ngày dựa trên khoảng ngày sau đây, vui lòng bỏ qua dữ liệu giờ, phút, giây và chỉ tính theo ngày tháng): Từ $startDate đến $endDate
         - Tôi đi cùng với : $company
+        - Số lượng thành viên đi cùng (dùng để chọn nhà xe) : $memberCountString
         - Những đặc điểm tôi quan tâm: $interests
+        - Vị trí hiện tại của người dùng cung cấp (tùy chọn): $currentLocation
 
         **Đối với mỗi khung thời gian (morning, lunch, afternoon, evening) trong mỗi ngày, hãy gợi ý ít nhất một địa điểm. Mỗi địa điểm phải có các thông tin sau:**
         - **'type'**: Phải là 'food' (cho địa điểm ăn uống) hoặc 'sightseeing' (cho địa điểm tham quan).
@@ -99,7 +103,7 @@ class AIService
 
         $notice
         ";
-        // **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
+            // **Quan trọng: Đầu ra phải là một cấu trúc JSON hoàn chỉnh và bằng tiếng Việt.**
 
             $response = $this->client
                 ->generativeModel(
@@ -217,10 +221,43 @@ class AIService
                                     type: DataType::STRING,
                                     description: 'Đối tượng mà người dùng đi tham quan cùng (viết dưới dạng tiếng Việt có dấu, phiên bản viết đúng chính tả)'
                                 ),
+                                'bus' => new Schema(
+                                    type: DataType::ARRAY,
+                                    description: 'Các gợi ý về công ty/hãng xe khách hoặc nơi tập trung xe khách để đón/trả khách (bến xe tư nhân). Nhà xe sẽ phải gần với Vị trí hiện tại của người dùng. Đưa ra 2 gợi ý tốt nhất',
+                                    items: new Schema(
+                                        type: DataType::OBJECT,
+                                        properties: [
+                                            'name' => new Schema(type: DataType::STRING, description: 'Tên nhà xe hoặc bến xe'),
+                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ hoặc thông tin liên hệ'),
+                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết về nhà xe, tuyến đường, hoặc dịch vụ'),
+                                            'phone' => new Schema(type: DataType::STRING, description: 'Số điện thoại liên hệ (nếu có, nếu không có thì chỉ ghi là không có)'),
+                                            'website' => new Schema(type: DataType::STRING, description: 'Website hoặc trang thông tin (nếu có, nếu không có thì chỉ ghi là không có)'),
+                                            'departure_time' => new Schema(type: DataType::STRING, description: 'Giờ xuất phát dự kiến (nếu có, nếu không có thì chỉ ghi là không có)'),
+                                            'arrival_time' => new Schema(type: DataType::STRING, description: 'Giờ đến dự kiến (nếu có, nếu không có thì chỉ ghi là không có)'),
+                                            'price' => new Schema(type: DataType::STRING, description: 'Giá vé tham khảo (nếu có, nếu không có thì chỉ ghi là không có)'),
+                                        ],
+                                        required: ['name', 'address', 'description']
+                                    )
+                                ),
+                                'motel' => new Schema(
+                                    type: DataType::ARRAY,
+                                    description: 'Các địa điểm gợi ý khách sạn gần khu thăm quan để tiện cư trú tạm thời. Đưa ra 2 gợi ý tốt nhất',
+                                    items: new Schema(
+                                        type: DataType::OBJECT,
+                                        properties: [
+                                            'name' => new Schema(type: DataType::STRING, description: 'Tên địa điểm'),
+                                            'address' => new Schema(type: DataType::STRING, description: 'Địa chỉ'),
+                                            'latitude' => new Schema(type: DataType::NUMBER, description: 'Vĩ độ'),
+                                            'longitude' => new Schema(type: DataType::NUMBER, description: 'Kinh độ'),
+                                            'description' => new Schema(type: DataType::STRING, description: 'Mô tả chi tiết'),
+                                        ],
+                                        required: ['name', 'address', 'description']
+                                    )
+                                ),
                             ],
-                            required: ['days', 'description', 'interests', 'company'],
+                            required: ['days', 'description', 'interests', 'company', 'bus', 'motel'],
                             // Đảm bảo thứ tự các key trong JSON
-                            propertyOrdering: ['days', 'description', 'company', 'interests']
+                            propertyOrdering: ['days', 'description', 'company', 'interests', 'bus', 'motel']
                         )
                     )
                 )
@@ -243,8 +280,37 @@ class AIService
                 'description' => $response['description'],
                 'company' => $response['company'],
                 'interests' => $response['interests'],
+                'current_location' => $currentLocation,
+                'member_count' => $memberCount,
                 'cost' => 0,
             ]);
+
+            if (!empty($response['bus'])) {
+                foreach ($response['bus'] as $bus) {
+                    $history->buses()->create([
+                        'name' => $bus['name'] ?? '',
+                        'address' => $bus['address'] ?? '',
+                        'description' => $bus['description'] ?? '',
+                        'phone' => $bus['phone'] ?? null,
+                        'website' => $bus['website'] ?? null,
+                        'departure_time' => $bus['departure_time'] ?? null,
+                        'arrival_time' => $bus['arrival_time'] ?? null,
+                        'price' => $bus['price'] ?? null,
+                    ]);
+                }
+            }
+
+            if (!empty($response['motel'])) {
+                foreach ($response['motel'] as $motel) {
+                    $history->motels()->create([
+                        'name' => $motel['name'] ?? '',
+                        'address' => $motel['address'] ?? '',
+                        'latitude' => $motel['latitude'] ?? null,
+                        'longitude' => $motel['longitude'] ?? null,
+                        'description' => $motel['description'] ?? '',
+                    ]);
+                }
+            }
 
             foreach ($response['days'] as $dayData) {
                 $day = $dayData['day'];
@@ -283,13 +349,14 @@ class AIService
             DB::commit();
 
             //* always get the 'truth' from database
-            $returnData = $history->load('items', 'items.sightseeing', 'items.food');
+            $returnData = $history;
             return [
                 'success' => true,
                 'data' => $returnData
             ];
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::debug($e->getMessage());
             return [
                 'success' => false,
                 'error' => 'Có lỗi xảy ra khi tạo lịch trình du lịch.',
@@ -308,6 +375,145 @@ class AIService
         ];
     }
 
+    public function getNewBusItem(string $userPrompt, object $context, object $oldItems): ?array
+    {
+        // note: the old items is
+        // $history = History::findOrFail($id);
+        // $oldItems = $history->buses;
+
+        $location = $context->location;
+        $currentLocation = $context->current_location;
+        $interests = $context->interests;
+        $company = $context->company;
+        $memberCount = $context->member_count;
+
+        $notice = self::aiNotice;
+
+        $oldNames = [];
+        foreach ($oldItems as $item) {
+            if (isset($item->name)) {
+            $oldNames[] = $item->name;
+            }
+        }
+
+        $prompt = "
+        Dựa trên một lịch trình du lịch có sẵn tại '$location', hãy tìm một nhà xe mới, không trùng với các nhà xe hiện tại sau: " . json_encode($oldNames, JSON_UNESCAPED_UNICODE) . ".
+
+
+        Thông tin về bối cảnh chuyến đi:
+        - Địa điểm chính: $location
+        - Sở thích chung: $interests
+        - Đi cùng với: $company
+        - Địa điểm hiện tại của người dùng: $currentLocation
+        - Số người đi cùng: $memberCount
+
+        Yêu cầu mới của người dùng là: \"$userPrompt\"
+
+        Nhiệm vụ của bạn là tìm **chỉ một (1)** nhà xe mới thỏa mãn yêu cầu người dùng, không trùng lặp với các item cũ.
+
+        Đầu ra phải là một object JSON duy nhất, không phải mảng.
+
+        $notice
+        ";
+
+        try {
+            $schema = new Schema(
+                type: DataType::OBJECT,
+                properties: [
+                    'name' => new Schema(type: DataType::STRING),
+                    'address' => new Schema(type: DataType::STRING),
+                    'description' => new Schema(type: DataType::STRING),
+                    'phone' => new Schema(type: DataType::STRING),
+                    'website' => new Schema(type: DataType::STRING),
+                    'departure_time' => new Schema(type: DataType::STRING),
+                    'arrival_time' => new Schema(type: DataType::STRING),
+                    'price' => new Schema(type: DataType::STRING),
+                ],
+                required: ['name', 'address', 'description']
+            );
+
+            $response = $this->client
+                ->generativeModel(model: 'gemini-2.5-flash')
+                ->withGenerationConfig(
+                    generationConfig: new GenerationConfig(
+                        responseMimeType: ResponseMimeType::APPLICATION_JSON,
+                        responseSchema: $schema
+                    )
+                )
+                ->generateContent($prompt);
+
+            return json_decode($response->text(), true);
+        } catch (\Exception $e) {
+            Log::error("AI Service failed to get replacement item: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getNewMotelItem(string $userPrompt, object $context, object $oldItems): ?array {
+        $location = $context->location;
+        $currentLocation = $context->current_location;
+        $interests = $context->interests;
+        $company = $context->company;
+        $memberCount = $context->member_count;
+
+        $notice = self::aiNotice;
+
+        $oldNames = [];
+        foreach ($oldItems as $item) {
+            if (isset($item->name)) {
+            $oldNames[] = $item->name;
+            }
+        }
+
+        $prompt = "
+        Dựa trên một lịch trình du lịch có sẵn tại '$location', hãy tìm một khách sạn/nhà nghỉ mới, không trùng với các khách sạn hiện tại sau: " . json_encode($oldNames, JSON_UNESCAPED_UNICODE) . ".
+
+        Thông tin về bối cảnh chuyến đi:
+        - Địa điểm chính: $location
+        - Sở thích chung: $interests
+        - Đi cùng với: $company
+        - Địa điểm hiện tại của người dùng: $currentLocation
+        - Số người đi cùng: $memberCount
+
+        Yêu cầu mới của người dùng là: \"$userPrompt\"
+
+        Nhiệm vụ của bạn là tìm **chỉ một (1)** khách sạn/nhà nghỉ mới thỏa mãn yêu cầu người dùng, không trùng lặp với các item cũ.
+
+        Đầu ra phải là một object JSON duy nhất, không phải mảng.
+
+        $notice
+        ";
+
+        try {
+            $schema = new Schema(
+            type: DataType::OBJECT,
+            properties: [
+                'name' => new Schema(type: DataType::STRING),
+                'address' => new Schema(type: DataType::STRING),
+                'latitude' => new Schema(type: DataType::NUMBER),
+                'longitude' => new Schema(type: DataType::NUMBER),
+                'description' => new Schema(type: DataType::STRING),
+            ],
+            required: ['name', 'address', 'description', 'latitude', 'longitude']
+            );
+
+            $response = $this->client
+            ->generativeModel(model: 'gemini-2.5-flash')
+            ->withGenerationConfig(
+                generationConfig: new GenerationConfig(
+                responseMimeType: ResponseMimeType::APPLICATION_JSON,
+                responseSchema: $schema
+                )
+            )
+            ->generateContent($prompt);
+
+            return json_decode($response->text(), true);
+        } catch (\Exception $e) {
+            Log::error("AI Service failed to get replacement motel item: " . $e->getMessage());
+            return null;
+        }
+    }
+
     /**
      * get a single replacement item from the AI.
      *
@@ -317,18 +523,31 @@ class AIService
      * @param object $oldItem The item being replaced
      * @return array|null The new item data, or null on failure.
      */
-    public function getReplacementItem(string $type, string $userPrompt, object $context, object $oldItem): ?array
+    public function getReplacementItem(string $type, string $userPrompt, object $context, object $oldFoodItems, object $oldSightseeingItems): ?array
     {
         $location = $context->location;
         $interests = $context->interests;
         $company = $context->company;
         $dayTime = $context->dayTime;
         $foodType = $context->foodType ?? 'đa dạng';
+        $memberCount = $context->member_count;
         $notice = self::aiNotice;
         $vietnameseType = $type === 'food' ? 'địa điểm ăn uống' : 'địa điểm tham quan';
 
+        $oldNames = [];
+        foreach ($oldFoodItems as $item) {
+            if (isset($item->name)) {
+            $oldNames[] = $item->name;
+            }
+        }
+        foreach ($oldSightseeingItems as $item) {
+            if (isset($item->name)) {
+            $oldNames[] = $item->name;
+            }
+        }
+
         $prompt = "
-        Dựa trên một lịch trình du lịch có sẵn tại '$location', hãy tìm một địa điểm THAY THẾ cho địa điểm cũ là '{$oldItem->name}'.
+        Dựa trên một lịch trình du lịch có sẵn tại '$location', hãy tìm một địa điểm THAY THẾ cho địa điểm cũ không trùng với các item hiện tại sau: " . json_encode($oldNames, JSON_UNESCAPED_UNICODE) . ".
 
         Thông tin về bối cảnh chuyến đi:
         - Địa điểm chính: $location
@@ -336,6 +555,7 @@ class AIService
         - Đi cùng với: $company
         - Buổi trong ngày: $dayTime
         - Loại ẩm thực chính (nếu thay thế địa điểm ăn uống): $foodType
+        - Số người đi cùng: $memberCount
 
         Yêu cầu mới của người dùng là: \"$userPrompt\"
 
@@ -351,7 +571,7 @@ class AIService
 
         $notice
         ";
-
+        
         try {
             $schema = new Schema(
                 type: DataType::OBJECT,
@@ -377,7 +597,6 @@ class AIService
                 ->generateContent($prompt);
 
             return json_decode($response->text(), true);
-
         } catch (\Exception $e) {
             Log::error("AI Service failed to get replacement item: " . $e->getMessage());
             return null;
@@ -393,5 +612,4 @@ class AIService
             $day_title
         );
     }
-
 }
