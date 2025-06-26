@@ -63,14 +63,25 @@ Route::delete('/trip-costs/{cost}', [ToolboxController::class, 'destroyTripCost'
     ->middleware('auth');
 
 Route::middleware(['auth'])->group(function () {
+    Route::delete('/history-bus/{bus}', [HistoryController::class, 'destroyBus'])
+        ->name('history.bus.destroy');
+    Route::delete('/history-motel/{motel}', [HistoryController::class, 'destroyMotel'])
+        ->name('history.motel.destroy');
     Route::delete('/history-food/{food}', [HistoryController::class, 'destroyFood'])
         ->name('history.food.destroy');
     Route::delete('/history-sightseeing/{sightseeing}', [HistoryController::class, 'destroySightseeing'])
         ->name('history.sightseeing.destroy');
+
     Route::post('/history-items/{type}/{id}/replace', [HistoryController::class, 'replaceItem'])
         ->middleware('throttle:3,1')
         ->name('history.item.replace');
     Route::post('/history-items/{id}/add', [HistoryController::class, 'addItem'])
         ->middleware('throttle:3,1')
         ->name('history.item.add');
+    Route::post('/history-bus/{id}/add', [HistoryController::class, 'addBusItem'])
+        ->middleware('throttle:3,1')
+        ->name('history.bus.add');
+    Route::post('/history-motel/{id}/add', [HistoryController::class, 'addMotelItem'])
+        ->middleware('throttle:3,1')
+        ->name('history.motel.add');
 });
