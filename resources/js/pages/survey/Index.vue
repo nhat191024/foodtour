@@ -244,7 +244,7 @@ const getCurrentLocation = () => {
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                 if (!response.ok) throw new Error('Không thể chuyển đổi tọa độ.');
                 const data = await response.json();
-                console.log(data);
+                // console.log(data);
 
                 const address = data.address || {};
                 const parts = [
@@ -264,7 +264,7 @@ const getCurrentLocation = () => {
                     // throw new Error('Không tìm thấy tên địa danh.');
                 }
             } catch (error) {
-                console.error(error);
+                // console.error(error);
                 // showToast('Không thể lấy tên địa danh từ tọa độ.', 'error');
             } finally {
                 isFetchingLocation.value = false;
