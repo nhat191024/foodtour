@@ -20,6 +20,8 @@ class History extends Model
         'description',
         'company',
         'interests',
+        'current_location',
+        'member_count',
     ];
 
     /**
@@ -36,6 +38,16 @@ class History extends Model
     public function items()
     {
         return $this->hasMany(HistoryItem::class);
+    }
+
+    public function buses()
+    {
+        return $this->hasMany(HistoryBus::class, 'history_id');
+    }
+
+    public function motels()
+    {
+        return $this->hasMany(HistoryMotel::class, 'history_id');
     }
 
     public function tripCosts()

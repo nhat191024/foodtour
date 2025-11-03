@@ -1,15 +1,29 @@
 <script setup>
 import ClientLayout from '@/layouts/ClientAppLayout.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { Loader2 } from 'lucide-vue-next';
 import DatePicker from 'vue-datepicker-next';
 import 'vue-datepicker-next/index.css';
 import 'vue-datepicker-next/locale/vi.es.js';
+import { showToast } from '@/composables/useToasts';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 
 const props = defineProps({
     questions: Array,
+    summary_location: String,
+    data: { type: Array, default: () => [] },
+    locations: { type: Array, default: () => [] },
+    initialLocation: { type: String, default: '' }
 });
 
 const currentStep = ref(0);
@@ -84,6 +98,7 @@ function prevStep() {
 }
 
 function submitSurvey() {
+    isAskLocationModalOpen.value = false;
     const processedData = { ...form.data() };
     Object.keys(processedData.answers).forEach(key => {
         const value = processedData.answers[key];
@@ -193,6 +208,156 @@ function getMaxEndDate(startDate) {
     start.setFullYear(start.getFullYear() + 1);
     return start.toISOString().split('T')[0];
 }
+
+const isAskLocationModalOpen = ref(false);
+// const itemToDelete = ref(null);
+// const submitLocationForm = useForm({});
+
+const openAskLocationModal = () => {
+    isAskLocationModalOpen.value = true;
+};
+
+const proceedWithoutCurrentLocation = () => {
+    submitSurvey();
+};
+
+const submitLocation = () => {
+    // the submit function is called inside the function below
+    getCurrentLocation();
+};
+
+const isFetchingLocation = ref(false);
+
+const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+        showToast('Trình duyệt của bạn không hỗ trợ lấy vị trí.', 'error');
+        showToast('submit 1 called.', 'success');
+        return;
+    }
+
+    isFetchingLocation.value = true;
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                if (!response.ok) throw new Error('Không thể chuyển đổi tọa độ.');
+                const data = await response.json();
+                // console.log(data);
+
+                const address = data.address || {};
+                const parts = [
+                    address.road,
+                    address.suburb,
+                    address.town,
+                    address.city,
+                    address.state,
+                    address.country
+                ].filter(Boolean);
+
+                if (parts.length > 0) {
+                    form.answers['current_location'] = parts.join(', ');
+                    // showToast('Đã lấy vị trí thành công: ' + parts.join(', '), 'success');
+                    submitSurvey();
+                } else {
+                    // throw new Error('Không tìm thấy tên địa danh.');
+                }
+            } catch (error) {
+                // console.error(error);
+                // showToast('Không thể lấy tên địa danh từ tọa độ.', 'error');
+            } finally {
+                isFetchingLocation.value = false;
+                submitSurvey();
+            }
+        },
+        (error) => {
+            let message = 'Không thể lấy vị trí.';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    message = "Bạn đã từ chối quyền truy cập vị trí.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = "Thông tin vị trí không có sẵn.";
+                    break;
+                case error.TIMEOUT:
+                    message = "Yêu cầu lấy vị trí đã hết hạn.";
+                    break;
+            }
+            // showToast(message, 'error');
+            isFetchingLocation.value = false;
+            submitSurvey();
+        }
+    );
+};
+
+const countdownSeconds = ref(0);
+const countdownInterval = ref(null);
+
+const durationDays = computed(() => {
+    const arr = form.answers['duration'];
+    if (Array.isArray(arr) && arr.length === 2 && arr[0] && arr[1]) {
+        const start = new Date(arr[0]);
+        const end = new Date(arr[1]);
+        let diff = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        if (diff < 1) diff = 1;
+        if (diff > 14) diff = 14;
+        return diff;
+    }
+    return 1;
+});
+
+const estimatedSeconds = computed(() => {
+    return Math.round(45 + (durationDays.value - 1) * ((180 - 45) / 13));
+});
+
+const estimatedMinutes = computed(() => Math.ceil(estimatedSeconds.value / 60));
+
+const estimatedFinishTime = computed(() => {
+    return new Date(Date.now() + countdownSeconds.value * 1000).toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+});
+
+const countdownDisplay = computed(() => {
+    const minutes = Math.floor(countdownSeconds.value / 60);
+    const seconds = countdownSeconds.value % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+});
+
+const startCountdown = () => {
+    countdownSeconds.value = estimatedSeconds.value;
+
+    countdownInterval.value = setInterval(() => {
+        if (countdownSeconds.value > 0) {
+            countdownSeconds.value--;
+        } else {
+            clearInterval(countdownInterval.value);
+            countdownInterval.value = null;
+        }
+    }, 1000);
+};
+
+const stopCountdown = () => {
+    if (countdownInterval.value) {
+        clearInterval(countdownInterval.value);
+        countdownInterval.value = null;
+    }
+    countdownSeconds.value = 0;
+};
+
+watch(isLoading, (newValue) => {
+    if (newValue) {
+        startCountdown();
+    } else {
+        stopCountdown();
+    }
+});
+
+onUnmounted(() => {
+    stopCountdown();
+});
 </script>
 
 <template>
@@ -202,9 +367,15 @@ function getMaxEndDate(startDate) {
             <div v-if="isLoading" class="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
                 <div class="text-center">
                     <Loader2 class="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
-                    <p class="text-lg font-medium text-gray-700">Đang sắp xếp lịch trình cho bạn...</p>
-                    <p class="text-sm text-gray-500 mt-2">Vui lòng đợi trong giây lát. Bạn có thể rời màn hình này và
-                        quay lại vào lúc sau. Kết quả sẽ được lưu ở trong phần lịch sử chuyến đi.</p>
+                    <p class="text-lg font-medium text-gray-700">
+                        Đang sắp xếp lịch trình cho bạn...<br>
+                        Thời gian dự kiến: {{ estimatedFinishTime }} (Còn {{ countdownDisplay }})
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Vui lòng đợi khoảng {{ countdownDisplay }} nữa<br>
+                        Bạn có thể rời màn hình này ngay và quay lại vào {{ estimatedFinishTime }}<br>
+                        Kết quả sẽ được lưu ở trong phần lịch sử chuyến đi.
+                    </p>
                     <a :href="route('history.index')" target="_blank" class="inline-block">
                         <Button size="sm" class="mt-3">
                             Lịch sử lịch trình
@@ -219,7 +390,7 @@ function getMaxEndDate(startDate) {
                     Quay lại
                 </Button>
                 <div>
-                    <Button v-if="currentStep === questions.length - 1" @click="submitSurvey"
+                    <Button v-if="currentStep === questions.length - 1" @click="openAskLocationModal"
                         :disabled="!isCurrentAnswerValid" :class="'cursor-pointer'">
                         Hoàn thành
                     </Button>
@@ -264,7 +435,6 @@ function getMaxEndDate(startDate) {
                         <h6>BACK</h6>
                     </button>
                 </div> -->
-
 
                 <div class="flex-1 flex flex-col items-center justify-start md:justify-center">
                     <div class="w-full max-w-2xl px-4">
@@ -371,7 +541,7 @@ function getMaxEndDate(startDate) {
                                 </Button>
 
                                 <Button :class="'mt-6 cursor-pointer'" v-if="currentStep === questions.length - 1"
-                                    @click="submitSurvey" :disabled="!isCurrentAnswerValid">
+                                    @click="openAskLocationModal" :disabled="!isCurrentAnswerValid">
                                     Hoàn thành
                                 </Button>
 
@@ -385,5 +555,38 @@ function getMaxEndDate(startDate) {
                 </div>
             </div>
         </div>
+
+        <Dialog :open="isAskLocationModalOpen" @update:open="isAskLocationModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="submitLocation">
+                    <DialogHeader>
+                        <DialogTitle>Cho phép truy cập vào địa điểm?</DialogTitle>
+                        <DialogDescription>
+                            <b>
+                                Hãy bấm đồng ý hoặc cho phép (Allow) khi trình duyệt hỏi quyền truy cập vị trí.
+                                Để có thể tìm kiếm nhà xe và nơi nghỉ ngơi hợp lý, chúng tôi cần bạn cung cấp vị trí
+                                hiện tại.
+                            </b>
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="my-4">
+                        <Label for="prompt" class="sr-only"></Label>
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" @click="proceedWithoutCurrentLocation()">Tôi không cần
+                            tìm gì cả</Button>
+                        <div class="my-1">
+                            <Label for="prompt" class="sr-only"></Label>
+                        </div>
+                        <Button type="button" @click="submitLocation()" :disabled="isFetchingLocation.valueOf()">
+                            <Loader2 v-if="isFetchingLocation.valueOf()" class="w-4 h-4 mr-1 animate-spin" />
+                            Tôi muốn tìm nhà xe, khách sạn
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </ClientLayout>
 </template>

@@ -25,7 +25,8 @@ const addForm = useForm({
 });
 
 const props = defineProps({
-    data: Object
+    data: Object,
+    history_id: Number
 });
 
 const history = computed(() => {
@@ -39,9 +40,7 @@ const history = computed(() => {
         if (!accumulator[dayKey]) {
             accumulator[dayKey] = [];
         }
-
         accumulator[dayKey].push(currentItem);
-
         return accumulator;
     }, {});
 });
@@ -103,19 +102,56 @@ const openDeleteModal = (type, item) => {
 };
 
 const isAddModalOpen = ref(false);
+const isAddBusMotelModalOpen = ref(false);
+const isAddBusNotMotel = ref(true);
 const targetHistoryItem = ref(0);
+
+const targetHistory = ref(0);
 
 const openAddModal = (historyItemId) => {
     targetHistoryItem.value = historyItemId;
     isAddModalOpen.value = true;
 };
 
+const openAddBusMotelModal = (type, historyId) => {
+    targetHistory.value = historyId;
+    isAddBusNotMotel.value = type === 'bus';
+    isAddBusMotelModalOpen.value = true;
+};
+
 const submitDeleteItem = () => {
     if (!itemToDelete.value) return;
 
     const { type, id } = itemToDelete.value;
-    const routeName = type === 'food' ? 'history.food.destroy' : 'history.sightseeing.destroy';
-    const params = type === 'food' ? { food: id } : { sightseeing: id };
+    // console.log(type, id);
+
+    let routeName = '';
+    let params = '';
+
+    switch (type) {
+        case 'food':
+            routeName = 'history.food.destroy';
+            params = { food: id };
+            break;
+        case 'sightseeing':
+            routeName = 'history.sightseeing.destroy';
+            params = { sightseeing: id };
+            break;
+        case 'bus':
+            routeName = 'history.bus.destroy';
+            params = { bus: id };
+            break;
+        case 'motel':
+            routeName = 'history.motel.destroy';
+            params = { motel: id };
+            break;
+
+        default:
+            break;
+    }
+    // console.log(routeName, params);
+
+    // console.log(route(routeName, params));
 
     deleteItemForm.delete(route(routeName, params), {
         preserveScroll: true,
@@ -153,6 +189,24 @@ const submitAdd = () => {
         // todo: onError
     });
 };
+
+const submitAddBusMotel = () => {
+    if (!targetHistory.value) return;
+
+    let routeName = 'history.motel.add';
+    if (isAddBusNotMotel.value) {
+        routeName = 'history.bus.add';
+    }
+
+    addForm.post(route(routeName, { id: targetHistory.value }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            isAddBusMotelModalOpen.value = false;
+            targetHistory.value = null;
+        }
+        // todo: onError
+    });
+};
 </script>
 
 <template>
@@ -183,6 +237,153 @@ const submitAdd = () => {
                         {{ data.description }}
                     </p>
                 </div>
+                <!-- <div class="w-full border-b border-gray-300"></div> -->
+                <!-- <p>{{ data.buses }}</p> -->
+                <div class="w-full border-b border-gray-300"></div>
+                <!-- busses here  -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-0">
+                        <h1 class="text-2xl font-semibold">Nhà xe gợi ý</h1>
+                        <!-- <div class="flex items-center gap-0">
+                            <p class=" text-gray-950 mb-6" style="font-size: 3rem !important;">psychology</p>
+                            <p class="material-icons" style="font-size: 1rem !important;">map</p>
+                            <p class="font-semibold pl-1">Địa điểm gợi ý</p>
+                        </div> -->
+                    </div>
+                    <div
+                        class="flex flex-nowrap gap-6 overflow-x-auto w-full min-w-0 scrollbar-hide overflow-visible p-3">
+                        <div v-for="item in data.buses" :key="item.id"
+                            class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1 h-fit"
+                            :class="{ 'md:max-w-[500px]': data.buses.length === 1 }">
+                            <h3 class="font-bold text-lg mb-1">🚌 {{ item.name }}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <!-- {{ item.food_type }} -->
+                                    Nhà xe
+                                </span>
+                                <span v-if="item.address"
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ item.address }}
+                                </span>
+                            </div>
+                            <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ item.description }}</p>
+                            <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ foodItem }}</p> -->
+                            <div class="flex flex-col gap-2 w-full mb-3">
+                                <!-- <div v-if="item.phone" class="flex items-center gap-2 text-sm text-gray-700">
+                                    <span class="font-medium">SĐT:</span>
+                                    <a :href="`tel:${item.phone}`" class="text-blue-600 hover:underline">{{ item.phone }}</a>
+                                </div> -->
+                                <div v-if="item.website" class="flex items-center gap-2 text-sm text-gray-700">
+                                    <span class="font-medium">Website:</span>
+                                    <a :href="item.website" target="_blank" rel="noopener"
+                                        class="text-blue-600 hover:underline">{{
+                                            item.website }}</a>
+                                </div>
+                                <div v-if="item.departure_time" class="flex items-center gap-2 text-sm text-gray-700">
+                                    <span class="font-medium">Giờ xuất phát:</span>
+                                    <span>{{ item.departure_time }}</span>
+                                </div>
+                                <div v-if="item.arrival_time" class="flex items-center gap-2 text-sm text-gray-700">
+                                    <span class="font-medium">Giờ đến:</span>
+                                    <span>{{ item.arrival_time }}</span>
+                                </div>
+                                <div v-if="item.price" class="flex items-center gap-2 text-sm text-gray-700">
+                                    <span class="font-medium">Giá vé:</span>
+                                    <span>{{ item.price }}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-auto w-full">
+                                <div class="flex gap-2 flex-1 min-w-[180px]">
+                                    <!-- <Button @click="openReplaceModal('food', item)" variant="outline"
+                                        class="action-btn flex-shrink-0">
+                                        <RotateCw class="w-4 h-4" />
+                                    </Button> -->
+                                    <Button @click="openDeleteModal('bus', item)" variant="outline"
+                                        class="action-btn flex-shrink-0" :disabled="loadingStates[`remove-${item.id}`]">
+                                        <Loader2 v-if="loadingStates[`remove-${item.id}`]"
+                                            class="w-4 h-4 animate-spin" />
+                                        <Trash2 v-else class="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-300 p-6 bg-gray-50 flex-shrink-0 w-[120px] h-[180px] md:w-auto md:flex-1 cursor-pointer hover:border-blue-400 transition-colors"
+                            style="min-width:120px; min-height:180px; align-self: center;" title="Thêm địa điểm mới"
+                            @click="openAddBusMotelModal('bus', history_id)">
+                            <div class="flex flex-col items-center justify-center h-full w-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400 mb-2" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="text-gray-500 text-sm font-medium">Thêm nhà xe</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full border-b border-gray-300"></div>
+                <!-- motel here  -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex flex-col gap-0">
+                        <h1 class="text-2xl font-semibold">Khách sạn gợi ý</h1>
+                        <!-- <div class="flex items-center gap-0">
+                            <p class=" text-gray-950 mb-6" style="font-size: 3rem !important;">psychology</p>
+                            <p class="material-icons" style="font-size: 1rem !important;">map</p>
+                            <p class="font-semibold pl-1">Địa điểm gợi ý</p>
+                        </div> -->
+                    </div>
+                    <div
+                        class="flex flex-nowrap gap-6 overflow-x-auto w-full min-w-0 scrollbar-hide overflow-visible p-3">
+                        <div v-for="item in data.motels" :key="item.id"
+                            class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1 h-fit"
+                            :class="{ 'md:max-w-[500px]': data.motels.length === 1 }">
+                            <h3 class="font-bold text-lg mb-1">🏨 {{ item.name }}</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <!-- {{ item.food_type }} -->
+                                    Khách sạn
+                                </span>
+                                <span v-if="item.address"
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ item.address }}
+                                </span>
+                            </div>
+                            <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ item.description }}</p>
+                            <div class="flex flex-wrap gap-2 mt-auto w-full">
+                                <div class="flex gap-2 flex-1 min-w-[180px]">
+                                    <!-- <Button @click="openReplaceModal('food', item)" variant="outline"
+                                        class="action-btn flex-shrink-0">
+                                        <RotateCw class="w-4 h-4" />
+                                    </Button> -->
+                                    <Button @click="openDeleteModal('motel', item)" variant="outline"
+                                        class="action-btn flex-shrink-0" :disabled="loadingStates[`remove-${item.id}`]">
+                                        <Loader2 v-if="loadingStates[`remove-${item.id}`]"
+                                            class="w-4 h-4 animate-spin" />
+                                        <Trash2 v-else class="w-4 h-4" />
+                                    </Button>
+                                    <Button @click="goToGoogleMap(item.name + ' ' + item.address)"
+                                        class="flex-1 cursor-pointer bg-black text-white py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
+                                        Đến ngay <p aria-hidden="true">→</p>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-300 p-6 bg-gray-50 flex-shrink-0 w-[120px] h-[180px] md:w-auto md:flex-1 cursor-pointer hover:border-blue-400 transition-colors"
+                            style="min-width:120px; min-height:180px; align-self: center;" title="Thêm địa điểm mới"
+                            @click="openAddBusMotelModal('motel',history_id)">
+                            <div class="flex flex-col items-center justify-center h-full w-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400 mb-2" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="text-gray-500 text-sm font-medium">Thêm khách sạn</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="w-full border-b border-gray-300"></div>
 
                 <!-- days loop here -->
@@ -194,7 +395,6 @@ const submitAdd = () => {
                         <div v-for="(item, index) in itemsInDay" :key="item.id" class="flex flex-col gap-2">
                             <div class="flex flex-col gap-0">
                                 <h1 class="text-2xl font-semibold">{{ getDayTimeVietnamese(item.day_time) }}</h1>
-                                <p class="font-semibold">History Item: {{ history[dayLabel][index].id }}</p>
                                 <div class="flex items-center gap-0">
                                     <!-- <p class=" text-gray-950 mb-6" style="font-size: 3rem !important;">psychology</p> -->
                                     <p class="material-icons" style="font-size: 1rem !important;">map</p>
@@ -206,12 +406,13 @@ const submitAdd = () => {
                                 class="flex flex-nowrap gap-6 overflow-x-auto w-full min-w-0 scrollbar-hide overflow-visible p-3">
                                 <div v-for="foodItem in item.food" :key="foodItem.id"
                                     class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1 h-fit"
-                                    :class="{'md:max-w-[500px]': item.food.length === 1}">
+                                    :class="{ 'md:max-w-[500px]': item.food.length === 1 }">
                                     <h3 class="font-bold text-lg mb-1">🍜 {{ foodItem.name }}</h3>
                                     <div class="flex flex-wrap gap-2 mb-4">
                                         <span v-if="foodItem.food_type"
                                             class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {{ foodItem.food_type }}
+                                            <!-- {{ foodItem.food_type }} -->
+                                            Ăn uống
                                         </span>
                                         <span v-if="foodItem.address"
                                             class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -254,7 +455,7 @@ const submitAdd = () => {
                                 </div>
                                 <div v-for="sightseeingItem in item.sightseeing" :key="sightseeingItem.id"
                                     class="flex flex-col items-start justify-start rounded-3xl shadow-lg p-6 bg-white flex-shrink-0 w-[280px] md:w-auto md:flex-1 h-fit"
-                                    :class="{'md:max-w-[500px]': item.food.length === 1}">
+                                    :class="{ 'md:max-w-[500px]': item.food.length === 1 }">
                                     <h3 class="font-bold text-lg mb-1">🏛️ {{ sightseeingItem.name }}</h3>
                                     <div class="flex flex-wrap gap-2 mb-4">
                                         <span
@@ -267,7 +468,7 @@ const submitAdd = () => {
                                         </span>
                                     </div>
                                     <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem.description
-                                        }}
+                                    }}
                                     </p>
                                     <!-- <p class="text-gray-700 text-sm leading-relaxed mb-6">{{ sightseeingItem }}</p> -->
                                     <div class="flex flex-wrap gap-2 mt-auto w-full">
@@ -303,15 +504,14 @@ const submitAdd = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div
-                                    class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-300 p-6 bg-gray-50 flex-shrink-0 w-[120px] h-[180px] md:w-auto md:flex-1 cursor-pointer hover:border-blue-400 transition-colors"
+                                <div class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-300 p-6 bg-gray-50 flex-shrink-0 w-[120px] h-[180px] md:w-auto md:flex-1 cursor-pointer hover:border-blue-400 transition-colors"
                                     style="min-width:120px; min-height:180px; align-self: center;"
-                                    title="Thêm địa điểm mới"
-                                    @click="openAddModal(history[dayLabel][index].id)"
-                                >
+                                    title="Thêm địa điểm mới" @click="openAddModal(history[dayLabel][index].id)">
                                     <div class="flex flex-col items-center justify-center h-full w-full">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-gray-400 mb-2"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 4v16m8-8H4" />
                                         </svg>
                                         <span class="text-gray-500 text-sm font-medium">Thêm địa điểm</span>
                                     </div>
@@ -330,9 +530,9 @@ const submitAdd = () => {
                         Cảm thấy thiếu thứ gì đó? Đừng ngại tạo một lịch trình mới ngay!
                     </p>
                     <Link :href="route('survey.start')" class="inline-block">
-                        <Button size="sm" :class="'font-semibold cursor-pointer'">
-                            Tạo lịch trình mới
-                        </Button>
+                    <Button size="sm" :class="'font-semibold cursor-pointer'">
+                        Tạo lịch trình mới
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -380,14 +580,42 @@ const submitAdd = () => {
 
                     <div class="my-4">
                         <Label for="prompt" class="sr-only">Yêu cầu mới</Label>
-                        <Input id="prompt" v-model="addForm.prompt"
-                            placeholder="Ví dụ: một khu nghỉ dưỡng..." autocomplete="off" />
+                        <Input id="prompt" v-model="addForm.prompt" placeholder="Ví dụ: một khu nghỉ dưỡng..."
+                            autocomplete="off" />
                         <p v-if="addForm.errors.prompt" class="text-sm text-red-500 mt-1">{{
                             addForm.errors.prompt }}</p>
                     </div>
 
                     <DialogFooter>
                         <Button type="button" variant="secondary" @click="isAddModalOpen = false">Hủy</Button>
+                        <Button type="submit" :disabled="addForm.processing">
+                            <Loader2 v-if="addForm.processing" class="w-4 h-4 mr-2 animate-spin" />
+                            Xác nhận thêm
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+        <Dialog :open="isAddBusMotelModalOpen" @update:open="isAddBusMotelModalOpen = $event">
+            <DialogContent>
+                <form @submit.prevent="submitAddBusMotel">
+                    <DialogHeader>
+                        <DialogTitle>Thêm mới</DialogTitle>
+                        <DialogDescription>
+                            Hãy mô tả yêu cầu của bạn.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="my-4">
+                        <Label for="prompt" class="sr-only">Yêu cầu mới</Label>
+                        <Input id="prompt" v-model="addForm.prompt" placeholder="Ví dụ: một khu nghỉ dưỡng..."
+                            autocomplete="off" />
+                        <p v-if="addForm.errors.prompt" class="text-sm text-red-500 mt-1">{{
+                            addForm.errors.prompt }}</p>
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="button" variant="secondary" @click="isAddBusMotelModalOpen = false">Hủy</Button>
                         <Button type="submit" :disabled="addForm.processing">
                             <Loader2 v-if="addForm.processing" class="w-4 h-4 mr-2 animate-spin" />
                             Xác nhận thêm
